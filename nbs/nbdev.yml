@@ -1,0 +1,9 @@
+project:
+  output-dir: _docs
+
+website:
+  title: "xc_nlg"
+  site-url: "https://suchith720.github.io/xc_nlg"
+  description: "Combining Extreme Classification and Natural Language Generation"
+  repo-branch: main
+  repo-url: "https://github.com/suchith720/xc_nlg"
