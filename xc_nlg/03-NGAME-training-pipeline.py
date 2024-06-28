@@ -6,17 +6,18 @@ __all__ = ['block', 'args', 'metric', 'model', 'learn']
 # %% ../nbs/03-ngame-training-pipeline.ipynb 4
 import os,torch
 from xcai.basics import *
-from xcai.models.MMM00X import DBT009,DBT010
-
-# %% ../nbs/03-ngame-training-pipeline.ipynb 5
-os.environ['WANDB_MODE'] = 'disabled'
+from xcai.models.MMM00X import DBT012
 
 # %% ../nbs/03-ngame-training-pipeline.ipynb 6
-block = XCBlock.from_cfg('data', valid_pct=0.001, tfm='ng', tokenizer='sentence-transformers/msmarco-distilbert-base-v4')
+os.environ['WANDB_PROJECT']='xc-nlg_03-NGAME-training-pipeline'
 
 # %% ../nbs/03-ngame-training-pipeline.ipynb 7
+block = XCBlock.from_cfg('/home/aiscuser/scratch/datasets', 'data', valid_pct=0.001, tfm='ng', 
+                         tokenizer='sentence-transformers/msmarco-distilbert-base-v4')
+
+# %% ../nbs/03-ngame-training-pipeline.ipynb 8
 args = XCLearningArguments(
-    output_dir='/scratch/scai/phd/aiz218323/Projects/xc_nlg/outputs/03-NGAME-training-pipeline',
+    output_dir='/home/aiscuser/outputs/03-NGAME-training-pipeline',
     logging_first_step=True,
     per_device_train_batch_size=1024,
     per_device_eval_batch_size=64,
@@ -35,19 +36,20 @@ args = XCLearningArguments(
     adam_epsilon=1e-6,
     warmup_steps=100,
     weight_decay=0.01,
-    learning_rate=2e-3,
+    learning_rate=2e-4,
 )
 
-# %% ../nbs/03-ngame-training-pipeline.ipynb 8
+# %% ../nbs/03-ngame-training-pipeline.ipynb 10
 metric = PrecRecl(block.n_lbl, block.test.data_lbl_filterer, prop=block.train.dset.data.data_lbl,
                   pk=10, rk=200, rep_pk=[1, 3, 5, 10], rep_rk=[10, 100, 200])
 
-# %% ../nbs/03-ngame-training-pipeline.ipynb 9
-model = DBT010.from_pretrained('sentence-transformers/msmarco-distilbert-base-v4', apply_softmax=True)
+# %% ../nbs/03-ngame-training-pipeline.ipynb 11
+model = DBT012.from_pretrained('sentence-transformers/msmarco-distilbert-base-v4', margin=0.3, tau=0.1, 
+                               apply_softmax=True)
 
-# %% ../nbs/03-ngame-training-pipeline.ipynb 10
+# %% ../nbs/03-ngame-training-pipeline.ipynb 12
 learn = XCLearner(
-    model=model,
+    model=model, 
     args=args,
     train_dataset=block.train.dset,
     eval_dataset=block.test.dset,
@@ -55,5 +57,5 @@ learn = XCLearner(
     compute_metrics=metric,
 )
 
-# %% ../nbs/03-ngame-training-pipeline.ipynb 11
+# %% ../nbs/03-ngame-training-pipeline.ipynb 13
 learn.train()

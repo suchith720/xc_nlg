@@ -10,7 +10,7 @@ from tqdm.auto import tqdm
 from xcai.basics import *
 from xcai.models.MMM00X import BT0002, RT0005
 
-# %% ../nbs/00-nar-trie-inference-benchmarking.ipynb 7
+# %% ../nbs/00-nar-trie-inference-benchmarking.ipynb 9
 os.environ['WANDB_MODE'] = 'disabled'
 
 block = XCBlock.from_cfg('data', valid_pct=0.001, tokz='roberta-base')
@@ -28,7 +28,7 @@ model = RT0005.from_pretrained(mname, tn_targ=10_000, ig_tok=1)
 
 trie = XCTrie.from_block(block)
 
-# %% ../nbs/00-nar-trie-inference-benchmarking.ipynb 8
+# %% ../nbs/00-nar-trie-inference-benchmarking.ipynb 10
 metric = PrecRecl(block.n_lbl, block.test.data_lbl_filterer, 
                   prop=block.train.dset.data.data_lbl, pk=10, rk=10, rep_pk=[1, 3, 5, 10], rep_rk=[10])
 
