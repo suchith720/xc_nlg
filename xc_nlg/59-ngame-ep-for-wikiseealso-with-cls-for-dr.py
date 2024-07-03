@@ -6,7 +6,7 @@ __all__ = ['data_dir', 'pkl_dir', 'pkl_file', 'args', 'metric', 'bsz', 'model', 
 # %% ../nbs/59-ngame-ep-for-wikiseealso-with-cls-for-dr.ipynb 2
 import os,torch, torch.multiprocessing as mp, pickle
 from xcai.basics import *
-from xcai.models.PPP0XX import DBT011
+from xcai.models.PPP0XX import DBT009,DBT011
 
 # %% ../nbs/59-ngame-ep-for-wikiseealso-with-cls-for-dr.ipynb 4
 os.environ['CUDA_VISIBLE_DEVICES'] = '0,1'

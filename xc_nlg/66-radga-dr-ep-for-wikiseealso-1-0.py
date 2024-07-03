@@ -18,7 +18,7 @@ pkl_dir = f'{data_dir}/processed/'
 pkl_file = f'{pkl_dir}/wikiseealso_data-metas_distilbert-base-uncased_rm_radga-final.pkl'
 
 # %% ../nbs/66-radga-dr-ep-for-wikiseealso.ipynb 10
-with open(pkl_file, 'rb') as file: 
+with open(pkl_file, 'rb') as file:
     block = pickle.load(file)
 
 # %% ../nbs/66-radga-dr-ep-for-wikiseealso.ipynb 12
@@ -74,19 +74,19 @@ bsz = max(args.per_device_train_batch_size, args.per_device_eval_batch_size)*tor
 
 model = RAD002.from_pretrained('sentence-transformers/msmarco-distilbert-base-v4', num_batch_labels=5000, batch_size=bsz,
                                margin=0.3, num_negatives=10, tau=0.1, apply_softmax=True,
-                               
-                               data_aug_meta_prefix='hlk2data', lbl2data_aug_meta_prefix='hlk2lbl', 
+
+                               data_aug_meta_prefix='hlk2data', lbl2data_aug_meta_prefix='hlk2lbl',
                                resize_length=5000,
-                               
-                               meta_loss_weight=0.3, pred_meta_prefix='cat', 
-                               
+
+                               meta_loss_weight=0.3, pred_meta_prefix='cat',
+
                                fusion_loss_weight=0.05, use_fusion_loss=False, use_noise=False, use_encoder_parallel=True)
 model.init_retrieval_head()
 model.init_cross_head()
 
 # %% ../nbs/66-radga-dr-ep-for-wikiseealso.ipynb 15
 learn = XCLearner(
-    model=model, 
+    model=model,
     args=args,
     train_dataset=block.train.dset,
     eval_dataset=block.test.dset,
@@ -97,4 +97,4 @@ learn = XCLearner(
 # %% ../nbs/66-radga-dr-ep-for-wikiseealso.ipynb 19
 if __name__ == '__main__':
     mp.freeze_support()
-    learn.train()
+    learn.train(resume_from_checkpoint=True)
