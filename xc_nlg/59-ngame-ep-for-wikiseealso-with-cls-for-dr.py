@@ -9,7 +9,7 @@ from xcai.basics import *
 from xcai.models.PPP0XX import DBT009,DBT011
 
 # %% ../nbs/59-ngame-ep-for-wikiseealso-with-cls-for-dr.ipynb 4
-os.environ['CUDA_VISIBLE_DEVICES'] = '0,1'
+os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 os.environ['WANDB_PROJECT']='xc-nlg_19-ngame-training-pipeline-with-multitriplet-loss-with-clustering'
 
 # %% ../nbs/59-ngame-ep-for-wikiseealso-with-cls-for-dr.ipynb 5

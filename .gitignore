@@ -1,5 +1,6 @@
 outputs/
 nbs/wandb/
+wandb/
 
 _docs/
 _proc/

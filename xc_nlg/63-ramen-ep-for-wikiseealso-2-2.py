@@ -22,9 +22,9 @@ fname = f'{pkl_dir}/wikiseealso_data-meta_distilbert-base-uncased_rm_ramen-cat.p
 # %% ../nbs/63-ramen-ep-for-wikiseealso.ipynb 11
 with open(fname, 'rb') as file: block = pickle.load(file)
 
-# %% ../nbs/63-ramen-ep-for-wikiseealso.ipynb 18
+# %% ../nbs/63-ramen-ep-for-wikiseealso.ipynb 14
 args = XCLearningArguments(
-    output_dir='/home/scai/phd/aiz218323/scratch/outputs/63-ramen-ep-for-wikiseealso',
+    output_dir='/home/scai/phd/aiz218323/scratch/outputs/63-ramen-ep-for-wikiseealso-2-2',
     logging_first_step=True,
     per_device_train_batch_size=800,
     per_device_eval_batch_size=800,
@@ -32,14 +32,14 @@ args = XCLearningArguments(
     representation_accumulation_steps=10,
     save_strategy="steps",
     evaluation_strategy="steps",
-    eval_steps=5000,
-    save_steps=5000,
+    eval_steps=1000,
+    save_steps=1000,
     save_total_limit=5,
     num_train_epochs=300,
     predict_with_representation=True,
     adam_epsilon=1e-6,
     warmup_steps=100,
-    weight_decay=0.0,
+    weight_decay=0.01,
     learning_rate=2e-4,
     generation_num_beams=10,
     generation_length_penalty=1.5,
@@ -64,25 +64,25 @@ args = XCLearningArguments(
                  'cat2lbl2data_idx', 'cat2lbl2data_input_ids', 'cat2lbl2data_attention_mask'],
     prune_metadata=True,
     num_metadata_prune_epochs=5,
-    metadata_prune_batch_size=64,
-    num_metadata_prune_warmup_epochs=10,
+    metadata_prune_batch_size=2048,
+    num_metadata_prune_warmup_epochs=0,
     prune_metadata_names=['cat_meta']
 )
 
-# %% ../nbs/63-ramen-ep-for-wikiseealso.ipynb 19
+# %% ../nbs/63-ramen-ep-for-wikiseealso.ipynb 15
 metric = PrecRecl(block.n_lbl, block.test.data_lbl_filterer, prop=block.train.dset.data.data_lbl,
                   pk=10, rk=200, rep_pk=[1, 3, 5, 10], rep_rk=[10, 100, 200])
 
-# %% ../nbs/63-ramen-ep-for-wikiseealso.ipynb 20
+# %% ../nbs/63-ramen-ep-for-wikiseealso.ipynb 16
 bsz = max(args.per_device_train_batch_size, args.per_device_eval_batch_size)*torch.cuda.device_count()
 
-model = DBT021.from_pretrained('sentence-transformers/msmarco-distilbert-base-v4', tn_targ=1000, margin=0.3, tau=0.1, apply_softmax=True, n_negatives=10, 
-                           m_lw=0.3, meta_prefix='cat', use_encoder_parallel=True, task_repr_type='tok', meta_repr_type='cls')
+model = DBT021.from_pretrained('sentence-transformers/msmarco-distilbert-base-v4', tn_targ=1000, margin=0.3, tau=0.1, apply_softmax=True, n_negatives=10,
+                           m_lw=[0.07, 0.07], meta_prefix='cat', use_encoder_parallel=True, task_repr_type='tok', meta_repr_type='cls')
 model.init_dr_head()
 
-# %% ../nbs/63-ramen-ep-for-wikiseealso.ipynb 21
+# %% ../nbs/63-ramen-ep-for-wikiseealso.ipynb 17
 learn = XCLearner(
-    model=model, 
+    model=model,
     args=args,
     train_dataset=block.train.dset,
     eval_dataset=block.test.dset,
@@ -90,7 +90,7 @@ learn = XCLearner(
     compute_metrics=metric,
 )
 
-# %% ../nbs/63-ramen-ep-for-wikiseealso.ipynb 24
+# %% ../nbs/63-ramen-ep-for-wikiseealso.ipynb 20
 if __name__ == '__main__':
     mp.freeze_support()
     learn.train()

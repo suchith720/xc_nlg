@@ -77,4 +77,4 @@ learn = XCLearner(
 # %% ../nbs/67-ngame-ep-for-wikiseealso-with-input-concatenation.ipynb 25
 if __name__ == '__main__':
     mp.freeze_support()
-    learn.train()
+    learn.train(resume_from_checkpoint=True)

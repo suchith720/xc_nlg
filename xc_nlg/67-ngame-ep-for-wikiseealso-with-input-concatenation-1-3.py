@@ -12,16 +12,26 @@ from xcai.models.PPP0XX import DBT009,DBT011
 os.environ['CUDA_VISIBLE_DEVICES'] = '0,1'
 os.environ['WANDB_PROJECT']='xc-nlg_66-radga-dr-ep-for-wikiseealso'
 
-# %% ../nbs/67-ngame-ep-for-wikiseealso-with-input-concatenation.ipynb 15
+# %% ../nbs/67-ngame-ep-for-wikiseealso-with-input-concatenation.ipynb 24
 pkl_dir = '/home/scai/phd/aiz218323/scratch/datasets'
-pkl_file = f'{pkl_dir}/processed/wikiseealso_data-metas_distilbert-base-uncased_rm_radga-final-aug-hlk.pkl'
-
-# %% ../nbs/67-ngame-ep-for-wikiseealso-with-input-concatenation.ipynb 16
+pkl_file = f'{pkl_dir}/processed/wikiseealso_data-metas_distilbert-base-uncased_rm_radga-aug-cat-block-032.pkl'
 with open(pkl_file, 'rb') as file: block = pickle.load(file)
 
-# %% ../nbs/67-ngame-ep-for-wikiseealso-with-input-concatenation.ipynb 18
+# %% ../nbs/67-ngame-ep-for-wikiseealso-with-input-concatenation.ipynb 25
+block.train.dset.data.data_info['input_ids'] = block.train.dset.data.data_info['input_ids_aug_cat']
+block.train.dset.data.data_info['attention_mask'] = block.train.dset.data.data_info['attention_mask_aug_cat']
+block.test.dset.data.data_info['input_ids'] = block.test.dset.data.data_info['input_ids_aug_cat']
+block.test.dset.data.data_info['attention_mask'] = block.test.dset.data.data_info['attention_mask_aug_cat']
+
+# %% ../nbs/67-ngame-ep-for-wikiseealso-with-input-concatenation.ipynb 26
+block.train.dset.data.lbl_info['input_ids'] = block.train.dset.data.lbl_info['input_ids_aug_cat']
+block.train.dset.data.lbl_info['attention_mask'] = block.train.dset.data.lbl_info['attention_mask_aug_cat']
+block.test.dset.data.lbl_info['input_ids'] = block.test.dset.data.lbl_info['input_ids_aug_cat']
+block.test.dset.data.lbl_info['attention_mask'] = block.test.dset.data.lbl_info['attention_mask_aug_cat']
+
+# %% ../nbs/67-ngame-ep-for-wikiseealso-with-input-concatenation.ipynb 28
 args = XCLearningArguments(
-    output_dir='/home/scai/phd/aiz218323/scratch/outputs/67-ngame-ep-for-wikiseealso-with-input-concatenation-1-0',
+    output_dir='/home/scai/phd/aiz218323/scratch/outputs/67-ngame-ep-for-wikiseealso-with-input-concatenation-1-3',
     logging_first_step=True,
     per_device_train_batch_size=800,
     per_device_eval_batch_size=800,
@@ -53,18 +63,18 @@ args = XCLearningArguments(
     fp16=True,
 )
 
-# %% ../nbs/67-ngame-ep-for-wikiseealso-with-input-concatenation.ipynb 20
+# %% ../nbs/67-ngame-ep-for-wikiseealso-with-input-concatenation.ipynb 30
 metric = PrecRecl(block.n_lbl, block.test.data_lbl_filterer, prop=block.train.dset.data.data_lbl,
                   pk=10, rk=200, rep_pk=[1, 3, 5, 10], rep_rk=[10, 100, 200])
 
-# %% ../nbs/67-ngame-ep-for-wikiseealso-with-input-concatenation.ipynb 21
+# %% ../nbs/67-ngame-ep-for-wikiseealso-with-input-concatenation.ipynb 31
 bsz = max(args.per_device_train_batch_size, args.per_device_eval_batch_size)*torch.cuda.device_count()
 
 model = DBT009.from_pretrained('sentence-transformers/msmarco-distilbert-base-v4', bsz=bsz, tn_targ=5000, margin=0.3, tau=0.1,
                                n_negatives=10, apply_softmax=True, use_encoder_parallel=True)
 model.init_dr_head()
 
-# %% ../nbs/67-ngame-ep-for-wikiseealso-with-input-concatenation.ipynb 22
+# %% ../nbs/67-ngame-ep-for-wikiseealso-with-input-concatenation.ipynb 32
 learn = XCLearner(
     model=model,
     args=args,
@@ -74,7 +84,7 @@ learn = XCLearner(
     compute_metrics=metric,
 )
 
-# %% ../nbs/67-ngame-ep-for-wikiseealso-with-input-concatenation.ipynb 25
+# %% ../nbs/67-ngame-ep-for-wikiseealso-with-input-concatenation.ipynb 35
 if __name__ == '__main__':
     mp.freeze_support()
-    learn.train(resume_from_checkpoint=True)
+    learn.train()
