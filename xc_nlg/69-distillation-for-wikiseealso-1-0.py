@@ -104,7 +104,7 @@ learn = XCLearner(
     compute_metrics=metric,
 )
 
-# %% ../nbs/69-distillation-for-wikiseealso.ipynb 25
+# %% ../nbs/69-distillation-for-wikiseealso.ipynb 26
 if __name__ == '__main__':
     mp.freeze_support()
     learn.train()
