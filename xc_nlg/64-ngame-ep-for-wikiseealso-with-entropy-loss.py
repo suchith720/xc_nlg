@@ -10,19 +10,19 @@ from xcai.models.PPP0XX import DBT012
 
 # %% ../nbs/64-ngame-ep-for-wikiseealso-with-entropy-loss.ipynb 4
 os.environ['CUDA_VISIBLE_DEVICES'] = '0,1'
-os.environ['WANDB_PROJECT']='xc-nlg_19-ngame-training-pipeline-with-multitriplet-loss-with-clustering'
+os.environ['WANDB_PROJECT']='xc-nlg_66-radga-dr-ep-for-wikiseealso'
 
 # %% ../nbs/64-ngame-ep-for-wikiseealso-with-entropy-loss.ipynb 5
 data_dir = '/home/scai/phd/aiz218323/Projects/XC_NLG/data'
 
-# %% ../nbs/64-ngame-ep-for-wikiseealso-with-entropy-loss.ipynb 7
+# %% ../nbs/64-ngame-ep-for-wikiseealso-with-entropy-loss.ipynb 8
 pkl_dir = '/home/scai/phd/aiz218323/scratch/datasets'
 pkl_file = f'{pkl_dir}/processed/wikiseealso_data_distilbert-base-uncased_xcnlg_ngame.pkl'
 
-# %% ../nbs/64-ngame-ep-for-wikiseealso-with-entropy-loss.ipynb 9
+# %% ../nbs/64-ngame-ep-for-wikiseealso-with-entropy-loss.ipynb 11
 with open(pkl_file, 'rb') as file: block = pickle.load(file)
 
-# %% ../nbs/64-ngame-ep-for-wikiseealso-with-entropy-loss.ipynb 11
+# %% ../nbs/64-ngame-ep-for-wikiseealso-with-entropy-loss.ipynb 13
 args = XCLearningArguments(
     output_dir='/home/scai/phd/aiz218323/scratch/outputs/64-ngame-ep-for-wikiseealso-with-entropy-loss-1-0',
     logging_first_step=True,
@@ -41,7 +41,7 @@ args = XCLearningArguments(
     index_space='ip',
     adam_epsilon=1e-6,
     warmup_steps=100,
-    weight_decay=0.0,
+    weight_decay=0.01,
     learning_rate=2e-4,
     group_by_cluster=True,
     num_clustering_warmup_epochs=10,
@@ -58,18 +58,18 @@ args = XCLearningArguments(
     fp16=True,
 )
 
-# %% ../nbs/64-ngame-ep-for-wikiseealso-with-entropy-loss.ipynb 12
+# %% ../nbs/64-ngame-ep-for-wikiseealso-with-entropy-loss.ipynb 14
 metric = PrecRecl(block.n_lbl, block.test.data_lbl_filterer, prop=block.train.dset.data.data_lbl,
                   pk=10, rk=200, rep_pk=[1, 3, 5, 10], rep_rk=[10, 100, 200])
 
-# %% ../nbs/64-ngame-ep-for-wikiseealso-with-entropy-loss.ipynb 13
+# %% ../nbs/64-ngame-ep-for-wikiseealso-with-entropy-loss.ipynb 15
 bsz = max(args.per_device_train_batch_size, args.per_device_eval_batch_size)*torch.cuda.device_count()
 
-model = DBT012.from_pretrained('sentence-transformers/msmarco-distilbert-base-v4', margin=0.3, tau=0.1, psi=1.0,
+model = DBT012.from_pretrained('sentence-transformers/msmarco-distilbert-base-v4', margin=0.01, tau=10,
                                n_negatives=10, apply_softmax=True, use_encoder_parallel=True)
 model.init_dr_head()
 
-# %% ../nbs/64-ngame-ep-for-wikiseealso-with-entropy-loss.ipynb 14
+# %% ../nbs/64-ngame-ep-for-wikiseealso-with-entropy-loss.ipynb 16
 learn = XCLearner(
     model=model, 
     args=args,
@@ -79,7 +79,7 @@ learn = XCLearner(
     compute_metrics=metric,
 )
 
-# %% ../nbs/64-ngame-ep-for-wikiseealso-with-entropy-loss.ipynb 17
+# %% ../nbs/64-ngame-ep-for-wikiseealso-with-entropy-loss.ipynb 18
 if __name__ == '__main__':
     mp.freeze_support()
     learn.train()
