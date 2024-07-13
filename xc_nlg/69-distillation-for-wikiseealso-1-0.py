@@ -59,6 +59,7 @@ args = XCLearningArguments(
     use_encoder_parallel=True,
     max_grad_norm=None,
     fp16=True,
+    label_names=['lbl2data_idx', 'lbl2data_input_ids', 'lbl2data_attention_mask'],
 )
 
 # %% ../nbs/69-distillation-for-wikiseealso.ipynb 11
@@ -94,7 +95,7 @@ metric = PrecRecl(block.n_lbl, block.test.data_lbl_filterer, prop=block.train.ds
 # %% ../nbs/69-distillation-for-wikiseealso.ipynb 22
 model = DTL001(m_student=m_student, m_teacher=m_teacher, embed_sim_loss_weight=1.0)
 
-# %% ../nbs/69-distillation-for-wikiseealso.ipynb 23
+# %% ../nbs/69-distillation-for-wikiseealso.ipynb 25
 learn = XCLearner(
     model=model, 
     args=args,
@@ -104,7 +105,7 @@ learn = XCLearner(
     compute_metrics=metric,
 )
 
-# %% ../nbs/69-distillation-for-wikiseealso.ipynb 26
+# %% ../nbs/69-distillation-for-wikiseealso.ipynb 28
 if __name__ == '__main__':
     mp.freeze_support()
     learn.train()

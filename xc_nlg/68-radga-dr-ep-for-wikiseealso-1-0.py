@@ -19,7 +19,7 @@ pkl_file = f'{pkl_dir}/processed/wikiseealso_data-meta_distilbert-base-uncased_r
 # %% ../nbs/68-radga-dr-ep-for-wikiseealso.ipynb 10
 with open(pkl_file, 'rb') as file: block = pickle.load(file)
 
-# %% ../nbs/68-radga-dr-ep-for-wikiseealso.ipynb 12
+# %% ../nbs/68-radga-dr-ep-for-wikiseealso.ipynb 13
 args = XCLearningArguments(
     output_dir='/home/scai/phd/aiz218323/scratch/outputs/68-radga-dr-ep-for-wikiseealso-1-0',
     logging_first_step=True,
@@ -95,11 +95,11 @@ args = XCLearningArguments(
     num_metadata_augment_epochs=5,
 )
 
-# %% ../nbs/68-radga-dr-ep-for-wikiseealso.ipynb 13
+# %% ../nbs/68-radga-dr-ep-for-wikiseealso.ipynb 14
 metric = PrecRecl(block.n_lbl, block.test.data_lbl_filterer, prop=block.train.dset.data.data_lbl,
                   pk=10, rk=200, rep_pk=[1, 3, 5, 10], rep_rk=[10, 100, 200])
 
-# %% ../nbs/68-radga-dr-ep-for-wikiseealso.ipynb 14
+# %% ../nbs/68-radga-dr-ep-for-wikiseealso.ipynb 15
 bsz = max(args.per_device_train_batch_size, args.per_device_eval_batch_size)*torch.cuda.device_count()
 
 model = RAD003.from_pretrained('sentence-transformers/msmarco-distilbert-base-v4', num_batch_labels=5000, batch_size=bsz,
@@ -115,7 +115,7 @@ model.init_retrieval_head()
 model.init_cross_head()
 model.init_cross_gate()
 
-# %% ../nbs/68-radga-dr-ep-for-wikiseealso.ipynb 16
+# %% ../nbs/68-radga-dr-ep-for-wikiseealso.ipynb 17
 learn = XCLearner(
     model=model, 
     args=args,
@@ -125,7 +125,7 @@ learn = XCLearner(
     compute_metrics=metric,
 )
 
-# %% ../nbs/68-radga-dr-ep-for-wikiseealso.ipynb 20
+# %% ../nbs/68-radga-dr-ep-for-wikiseealso.ipynb 21
 if __name__ == '__main__':
     mp.freeze_support()
     learn.train()

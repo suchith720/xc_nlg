@@ -120,7 +120,7 @@ args = XCLearningArguments(
     # label_names=['hlk2data_idx', 'hlk2data_input_ids', 'hlk2data_attention_mask',
     #              'hlk2lbl2data_idx', 'hlk2lbl2data_input_ids', 'hlk2lbl2data_attention_mask'],
 
-    predict_with_augmentation=False,
+    predict_with_augmentation=True,
     use_augmentation_index_representation=True,
     
     data_aug_meta_name='cat',
