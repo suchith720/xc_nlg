@@ -6,6 +6,8 @@ __all__ = ['pkl_dir', 'pkl_file', 'args', 'bsz', 'model_output', 'output_dir', '
 
 # %% ../nbs/69-distillation-for-wikiseealso.ipynb 2
 import os,torch, torch.multiprocessing as mp, pickle, numpy as np
+from transformers import DistilBertConfig
+
 from xcai.basics import *
 from xcai.models.PPP0XX import DBT010
 from xcai.models.distillation import DTL001
@@ -93,9 +95,9 @@ metric = PrecRecl(block.n_lbl, block.test.data_lbl_filterer, prop=block.train.ds
                   pk=10, rk=200, rep_pk=[1, 3, 5, 10], rep_rk=[10, 100, 200])
 
 # %% ../nbs/69-distillation-for-wikiseealso.ipynb 22
-model = DTL001(m_student=m_student, m_teacher=m_teacher, embed_sim_loss_weight=1.0)
+model = DTL001(DistilBertConfig(), m_student=m_student, m_teacher=m_teacher, embed_sim_loss_weight=1.0)
 
-# %% ../nbs/69-distillation-for-wikiseealso.ipynb 25
+# %% ../nbs/69-distillation-for-wikiseealso.ipynb 23
 learn = XCLearner(
     model=model, 
     args=args,
@@ -106,6 +108,10 @@ learn = XCLearner(
 )
 
 # %% ../nbs/69-distillation-for-wikiseealso.ipynb 28
+metric = PrecRecl(block.n_lbl, valid_dset.data_lbl_filterer, prop=block.train.dset.data.data_lbl,
+                  pk=10, rk=200, rep_pk=[1, 3, 5, 10], rep_rk=[10, 100, 200])
+
+# %% ../nbs/69-distillation-for-wikiseealso.ipynb 31
 if __name__ == '__main__':
     mp.freeze_support()
     learn.train()
