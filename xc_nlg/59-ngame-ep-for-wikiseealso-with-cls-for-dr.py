@@ -15,14 +15,14 @@ os.environ['WANDB_PROJECT']='xc-nlg_19-ngame-training-pipeline-with-multitriplet
 # %% ../nbs/59-ngame-ep-for-wikiseealso-with-cls-for-dr.ipynb 5
 data_dir = '/home/scai/phd/aiz218323/Projects/XC_NLG/data'
 
-# %% ../nbs/59-ngame-ep-for-wikiseealso-with-cls-for-dr.ipynb 8
+# %% ../nbs/59-ngame-ep-for-wikiseealso-with-cls-for-dr.ipynb 9
 pkl_dir = '/home/scai/phd/aiz218323/scratch/datasets'
 pkl_file = f'{pkl_dir}/processed/wikiseealso_data_distilbert-base-uncased_xcnlg_ngame.pkl'
 
-# %% ../nbs/59-ngame-ep-for-wikiseealso-with-cls-for-dr.ipynb 10
+# %% ../nbs/59-ngame-ep-for-wikiseealso-with-cls-for-dr.ipynb 11
 with open(pkl_file, 'rb') as file: block = pickle.load(file)
 
-# %% ../nbs/59-ngame-ep-for-wikiseealso-with-cls-for-dr.ipynb 12
+# %% ../nbs/59-ngame-ep-for-wikiseealso-with-cls-for-dr.ipynb 13
 args = XCLearningArguments(
     output_dir='/home/scai/phd/aiz218323/scratch/outputs/59-ngame-ep-for-wikiseealso-with-cls-for-dr',
     logging_first_step=True,
@@ -56,18 +56,18 @@ args = XCLearningArguments(
     fp16=True,
 )
 
-# %% ../nbs/59-ngame-ep-for-wikiseealso-with-cls-for-dr.ipynb 14
+# %% ../nbs/59-ngame-ep-for-wikiseealso-with-cls-for-dr.ipynb 15
 metric = PrecRecl(block.n_lbl, block.test.data_lbl_filterer, prop=block.train.dset.data.data_lbl,
                   pk=10, rk=200, rep_pk=[1, 3, 5, 10], rep_rk=[10, 100, 200])
 
-# %% ../nbs/59-ngame-ep-for-wikiseealso-with-cls-for-dr.ipynb 15
+# %% ../nbs/59-ngame-ep-for-wikiseealso-with-cls-for-dr.ipynb 16
 bsz = max(args.per_device_train_batch_size, args.per_device_eval_batch_size)*torch.cuda.device_count()
 
 model = DBT010.from_pretrained('distilbert-base-uncased', bsz=bsz, tn_targ=5000, margin=0.3, tau=0.1, 
                                n_negatives=5, apply_softmax=True, use_encoder_parallel=True)
 model.init_dr_head()
 
-# %% ../nbs/59-ngame-ep-for-wikiseealso-with-cls-for-dr.ipynb 16
+# %% ../nbs/59-ngame-ep-for-wikiseealso-with-cls-for-dr.ipynb 17
 learn = XCLearner(
     model=model, 
     args=args,
@@ -77,7 +77,7 @@ learn = XCLearner(
     compute_metrics=metric,
 )
 
-# %% ../nbs/59-ngame-ep-for-wikiseealso-with-cls-for-dr.ipynb 19
+# %% ../nbs/59-ngame-ep-for-wikiseealso-with-cls-for-dr.ipynb 20
 if __name__ == '__main__':
     mp.freeze_support()
     learn.train()

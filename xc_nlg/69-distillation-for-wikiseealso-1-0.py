@@ -20,16 +20,16 @@ os.environ['WANDB_PROJECT']='xc-nlg_69-distillation-for-wikiseealso'
 pkl_dir = '/home/scai/phd/aiz218323/scratch/datasets'
 pkl_file = f'{pkl_dir}/processed/wikiseealso_data-metas_distilbert-base-uncased_rm_radga-aug-cat-hlk-block-032.pkl'
 
-# %% ../nbs/69-distillation-for-wikiseealso.ipynb 6
+# %% ../nbs/69-distillation-for-wikiseealso.ipynb 8
 with open(pkl_file, 'rb') as file: block = pickle.load(file)
 
-# %% ../nbs/69-distillation-for-wikiseealso.ipynb 8
+# %% ../nbs/69-distillation-for-wikiseealso.ipynb 10
 block.train.dset.data.data_info['aug_input_ids'] = block.train.dset.data.data_info['input_ids_aug_cat']
 block.train.dset.data.data_info['aug_attention_mask'] = block.train.dset.data.data_info['attention_mask_aug_cat']
 block.test.dset.data.data_info['aug_input_ids'] = block.test.dset.data.data_info['input_ids_aug_cat']
 block.test.dset.data.data_info['aug_attention_mask'] = block.test.dset.data.data_info['attention_mask_aug_cat']
 
-# %% ../nbs/69-distillation-for-wikiseealso.ipynb 10
+# %% ../nbs/69-distillation-for-wikiseealso.ipynb 12
 args = XCLearningArguments(
     output_dir='/home/scai/phd/aiz218323/scratch/outputs/69-distillation-for-wikiseealso-1-0',
     logging_first_step=True,
@@ -64,10 +64,10 @@ args = XCLearningArguments(
     label_names=['lbl2data_idx', 'lbl2data_input_ids', 'lbl2data_attention_mask'],
 )
 
-# %% ../nbs/69-distillation-for-wikiseealso.ipynb 11
+# %% ../nbs/69-distillation-for-wikiseealso.ipynb 13
 from safetensors import safe_open
 
-# %% ../nbs/69-distillation-for-wikiseealso.ipynb 12
+# %% ../nbs/69-distillation-for-wikiseealso.ipynb 14
 bsz = max(args.per_device_train_batch_size, args.per_device_eval_batch_size)*torch.cuda.device_count()
 
 model_output = '/home/scai/phd/aiz218323/scratch/outputs/67-ngame-ep-for-wikiseealso-with-input-concatenation-1-1'
@@ -83,21 +83,21 @@ with safe_open(model_weight_file, framework="pt") as file:
 
 m_teacher.load_state_dict(model_weights, strict=False)
 
-# %% ../nbs/69-distillation-for-wikiseealso.ipynb 14
+# %% ../nbs/69-distillation-for-wikiseealso.ipynb 16
 bsz = max(args.per_device_train_batch_size, args.per_device_eval_batch_size)*torch.cuda.device_count()
 
 m_student = DBT010.from_pretrained('sentence-transformers/msmarco-distilbert-base-v4', bsz=bsz, tn_targ=5000, margin=0.3, tau=0.1, 
                                    n_negatives=10, apply_softmax=True, use_encoder_parallel=True)
 m_student.init_dr_head()
 
-# %% ../nbs/69-distillation-for-wikiseealso.ipynb 16
+# %% ../nbs/69-distillation-for-wikiseealso.ipynb 18
 metric = PrecRecl(block.n_lbl, block.test.data_lbl_filterer, prop=block.train.dset.data.data_lbl,
                   pk=10, rk=200, rep_pk=[1, 3, 5, 10], rep_rk=[10, 100, 200])
 
-# %% ../nbs/69-distillation-for-wikiseealso.ipynb 22
+# %% ../nbs/69-distillation-for-wikiseealso.ipynb 24
 model = DTL001(DistilBertConfig(), m_student=m_student, m_teacher=m_teacher, embed_sim_loss_weight=1.0)
 
-# %% ../nbs/69-distillation-for-wikiseealso.ipynb 23
+# %% ../nbs/69-distillation-for-wikiseealso.ipynb 25
 learn = XCLearner(
     model=model, 
     args=args,
@@ -107,11 +107,7 @@ learn = XCLearner(
     compute_metrics=metric,
 )
 
-# %% ../nbs/69-distillation-for-wikiseealso.ipynb 28
-metric = PrecRecl(block.n_lbl, valid_dset.data_lbl_filterer, prop=block.train.dset.data.data_lbl,
-                  pk=10, rk=200, rep_pk=[1, 3, 5, 10], rep_rk=[10, 100, 200])
-
-# %% ../nbs/69-distillation-for-wikiseealso.ipynb 31
+# %% ../nbs/69-distillation-for-wikiseealso.ipynb 29
 if __name__ == '__main__':
     mp.freeze_support()
     learn.train()
