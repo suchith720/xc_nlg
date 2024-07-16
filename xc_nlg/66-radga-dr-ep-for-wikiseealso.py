@@ -6,6 +6,7 @@ __all__ = ['data_dir', 'pkl_file', 'args', 'metric', 'bsz', 'model', 'learn']
 # %% ../nbs/66-radga-dr-ep-for-wikiseealso.ipynb 3
 import os,torch, torch.multiprocessing as mp, pickle
 from xcai.basics import *
+from xcai.analysis import *
 from xcai.models.radga import RAD002
 
 # %% ../nbs/66-radga-dr-ep-for-wikiseealso.ipynb 5
@@ -124,7 +125,7 @@ args = XCLearningArguments(
     use_augmentation_index_representation=True,
     
     data_aug_meta_name='cat',
-    augmentation_num_beams=3,
+    augmentation_num_beams=4,
     data_aug_prefix='aug',
     use_label_metadata=False,
 )
