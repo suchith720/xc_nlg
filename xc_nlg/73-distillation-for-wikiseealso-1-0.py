@@ -70,7 +70,7 @@ m_student.init_dr_head()
 
 # %% ../nbs/73-distillation-for-wikiseealso.ipynb 12
 model = DTL002(DistilBertConfig(), m_student=m_student, m_teacher=m_teacher, bsz=bsz, tn_targ=5000, margin=0.3, tau=0.1, 
-               n_negatives=10, apply_softmax=True, distil_loss_weight=1.0)
+               n_negatives=10, apply_softmax=True, distil_loss_weight=1.0, mse_loss_weight=0.1)
 
 # %% ../nbs/73-distillation-for-wikiseealso.ipynb 14
 metric = PrecRecl(block.n_lbl, block.test.data_lbl_filterer, prop=block.train.dset.data.data_lbl,
