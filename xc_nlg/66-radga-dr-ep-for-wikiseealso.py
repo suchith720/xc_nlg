@@ -24,7 +24,7 @@ pkl_file = f'{pkl_dir}/processed/wikiseealso_data-metas_distilbert-base-uncased_
 # %% ../nbs/66-radga-dr-ep-for-wikiseealso.ipynb 15
 with open(pkl_file, 'rb') as file: block = pickle.load(file)
 
-# %% ../nbs/66-radga-dr-ep-for-wikiseealso.ipynb 19
+# %% ../nbs/66-radga-dr-ep-for-wikiseealso.ipynb 17
 args = XCLearningArguments(
     output_dir='/home/scai/phd/aiz218323/scratch/outputs/66-radga-dr-ep-for-wikiseealso-1-0',
     logging_first_step=True,
@@ -68,11 +68,11 @@ args = XCLearningArguments(
     #              'hlk2lbl2data_idx', 'hlk2lbl2data_input_ids', 'hlk2lbl2data_attention_mask'],
 )
 
-# %% ../nbs/66-radga-dr-ep-for-wikiseealso.ipynb 20
+# %% ../nbs/66-radga-dr-ep-for-wikiseealso.ipynb 18
 metric = PrecRecl(block.n_lbl, block.test.data_lbl_filterer, prop=block.train.dset.data.data_lbl,
                   pk=10, rk=200, rep_pk=[1, 3, 5, 10], rep_rk=[10, 100, 200])
 
-# %% ../nbs/66-radga-dr-ep-for-wikiseealso.ipynb 21
+# %% ../nbs/66-radga-dr-ep-for-wikiseealso.ipynb 19
 bsz = max(args.per_device_train_batch_size, args.per_device_eval_batch_size)*torch.cuda.device_count()
 
 model = RAD002.from_pretrained('sentence-transformers/msmarco-distilbert-base-v4', num_batch_labels=5000, batch_size=bsz,
@@ -87,7 +87,7 @@ model = RAD002.from_pretrained('sentence-transformers/msmarco-distilbert-base-v4
 model.init_retrieval_head()
 model.init_cross_head()
 
-# %% ../nbs/66-radga-dr-ep-for-wikiseealso.ipynb 22
+# %% ../nbs/66-radga-dr-ep-for-wikiseealso.ipynb 20
 learn = XCLearner(
     model=model, 
     args=args,
@@ -97,12 +97,12 @@ learn = XCLearner(
     compute_metrics=metric,
 )
 
-# %% ../nbs/66-radga-dr-ep-for-wikiseealso.ipynb 26
+# %% ../nbs/66-radga-dr-ep-for-wikiseealso.ipynb 24
 if __name__ == '__main__':
     mp.freeze_support()
     learn.train()
 
-# %% ../nbs/66-radga-dr-ep-for-wikiseealso.ipynb 39
+# %% ../nbs/66-radga-dr-ep-for-wikiseealso.ipynb 38
 args = XCLearningArguments(
     output_dir='/home/scai/phd/aiz218323/scratch/outputs/66-radga-dr-ep-for-wikiseealso-5-2',
     logging_first_step=True,

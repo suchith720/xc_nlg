@@ -8,29 +8,31 @@ import xclib.data.data_utils as du, os, numpy as np
 from scipy import sparse
 from xclib.utils.sparse import retain_topk
 
+from xcai.basics import *
+
 # %% ../nbs/74-convert-predictions-to-dataset.ipynb 3
 def load_pred(fname):
     o = np.load(fname)
     return sparse.csr_matrix((o['data'], o['indices'], o['indptr']), dtype=np.float32)
     
 
-# %% ../nbs/74-convert-predictions-to-dataset.ipynb 4
+# %% ../nbs/74-convert-predictions-to-dataset.ipynb 6
 data_dir = '/home/scai/phd/aiz218323/Projects/XC_NLG/data/(mapped)LF-WikiSeeAlsoTitles-320K/'
 
 pred_name = f'{data_dir}/category_renee_trn_X_Y.npz'
 preds = retain_topk(load_pred(pred_name), k=5)
 du.write_sparse_file(preds, f'{data_dir}/category_renee_trn_X_Y.txt')
 
-# %% ../nbs/74-convert-predictions-to-dataset.ipynb 5
+# %% ../nbs/74-convert-predictions-to-dataset.ipynb 7
 pred_name = f'{data_dir}/category_renee_tst_X_Y.npz'
 preds = retain_topk(load_pred(pred_name), k=5)
 du.write_sparse_file(preds, f'{data_dir}/category_renee_tst_X_Y.txt')
 
-# %% ../nbs/74-convert-predictions-to-dataset.ipynb 6
-preds = sparse.csr_matrix((501070, preds.shape[1]))
-du.write_sparse_file(preds, f'{data_dir}/hyper_link_renee_lbl_X_Y.txt')
-
 # %% ../nbs/74-convert-predictions-to-dataset.ipynb 8
+preds = sparse.csr_matrix((312330, preds.shape[1]))
+du.write_sparse_file(preds, f'{data_dir}/category_renee_lbl_X_Y.txt')
+
+# %% ../nbs/74-convert-predictions-to-dataset.ipynb 11
 data_dir = '/home/scai/phd/aiz218323/Projects/XC_NLG/data/(mapped)LF-WikiTitles-500K'
 
 pred_name = f'{data_dir}/hyper_link_renee_trn_X_Y.npz'
