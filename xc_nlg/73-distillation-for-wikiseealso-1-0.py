@@ -58,7 +58,7 @@ args = XCLearningArguments(
 )
 
 # %% ../nbs/73-distillation-for-wikiseealso.ipynb 10
-model_output = '/home/scai/phd/aiz218323/scratch/outputs/67-ngame-ep-for-wikiseealso-with-input-concatenation-1-1'
+model_output = '/home/scai/phd/aiz218323/scratch/outputs/67-ngame-ep-for-wikiseealso-with-input-concatenation-1-4'
 m_teacher = TCH001.from_pretrained(f'{model_output}/teacher', n_data=block.train.dset.n_data, n_lbl=block.n_lbl)
 
 # %% ../nbs/73-distillation-for-wikiseealso.ipynb 11

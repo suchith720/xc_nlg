@@ -127,3 +127,34 @@ learn = XCLearner(
 if __name__ == '__main__':
     mp.freeze_support()
     learn.train()
+
+# %% ../nbs/72-radga-dr-ep-for-wikiseealso.ipynb 21
+metric = PrecRecl(block.n_lbl, block.test.data_lbl_filterer, prop=block.train.dset.data.data_lbl,
+                  pk=10, rk=200, rep_pk=[1, 3, 5, 10], rep_rk=[10, 100, 200])
+
+# %% ../nbs/72-radga-dr-ep-for-wikiseealso.ipynb 22
+bsz = max(args.per_device_train_batch_size, args.per_device_eval_batch_size)*torch.cuda.device_count()
+
+model = RAD002.from_pretrained('distilbert-base-uncased', num_batch_labels=5000, batch_size=bsz,
+                               margin=0.3, num_negatives=5, tau=0.1, apply_softmax=True,
+                               
+                               data_aug_meta_prefix='cat2data', lbl2data_aug_meta_prefix=None, 
+                               data_pred_meta_prefix=None, lbl2data_pred_meta_prefix=None,
+                               
+                               resize_length=5000, use_noise=True, noise_percent=0.5,
+                               
+                               meta_loss_weight=0.3, fusion_loss_weight=0.1, 
+                               use_fusion_loss=False,  use_encoder_parallel=True)
+
+model.init_retrieval_head()
+model.init_cross_head()
+
+# %% ../nbs/72-radga-dr-ep-for-wikiseealso.ipynb 24
+learn = XCLearner(
+    model=model, 
+    args=args,
+    train_dataset=block.train.dset,
+    eval_dataset=block.test.dset,
+    data_collator=block.collator,
+    compute_metrics=metric,
+)
