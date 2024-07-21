@@ -25,15 +25,15 @@ block.train.dset.meta['hyb_meta'] = block.train.dset.meta['cat_meta']
 block.test.dset.meta['hyb_meta'] = block.train.dset.meta['lnk_meta']
 
 # %% ../nbs/76-radga-dr-ep-for-wikiseealso.ipynb 11
-block.train.dset.meta['hyb_meta'] = MetaXCDataset('hyb', block.train.dset.meta['cat_meta'].data_meta,
+block.train.dset.meta['hyb_meta'] = MetaXCDataset('hyb', block.train.dset.meta['cat_meta'].data_meta, 
                                                   block.train.dset.meta['cat_meta'].lbl_meta,
                                                   block.train.dset.meta['cat_meta'].meta_info)
-block.test.dset.meta['hyb_meta'] = MetaXCDataset('hyb', block.train.dset.meta['lnk_meta'].data_meta,
+block.test.dset.meta['hyb_meta'] = MetaXCDataset('hyb', block.train.dset.meta['lnk_meta'].data_meta, 
                                                   block.train.dset.meta['lnk_meta'].lbl_meta,
                                                   block.train.dset.meta['lnk_meta'].meta_info)
 
 # %% ../nbs/76-radga-dr-ep-for-wikiseealso.ipynb 12
-block.collator.tfms.tfms[0].smp_features = [('lbl2data|cat2lbl2data|lnk2lbl2data|hyb2lbl2data', 1, (1,3,3,3)),
+block.collator.tfms.tfms[0].smp_features = [('lbl2data|cat2lbl2data|lnk2lbl2data|hyb2lbl2data', 1, (1,3,3,3)), 
                                             ('cat2data',1,3), ('lnk2data',1,3), ('hyb2data',1,3)]
 
 # %% ../nbs/76-radga-dr-ep-for-wikiseealso.ipynb 14
@@ -59,14 +59,14 @@ args = XCLearningArguments(
     generation_length_penalty=1.5,
     predict_with_generation=True,
     representation_search_type='BRUTEFORCE',
-
+    
     output_representation_attribute='data_fused_repr',
     label_representation_attribute='data_repr',
     metadata_representation_attribute='data_repr',
     data_augmentation_attribute='data_repr',
     representation_attribute='data_fused_repr',
     clustering_representation_attribute='data_fused_repr',
-
+    
     group_by_cluster=True,
     num_clustering_warmup_epochs=10,
     num_cluster_update_epochs=5,
@@ -80,12 +80,12 @@ args = XCLearningArguments(
     load_best_model_at_end=True,
     target_indices_key='plbl2data_idx',
     target_pointer_key='plbl2data_data2ptr',
-
+    
     use_distributional_representation=False,
     use_encoder_parallel=True,
-    max_grad_norm=None,
+    max_grad_norm=None, 
     fp16=True,
-
+    
     label_names=['hyb2data_idx', 'hyb2data_input_ids', 'hyb2data_attention_mask'],
 
     prune_metadata=False,
@@ -97,12 +97,12 @@ args = XCLearningArguments(
 
     predict_with_augmentation=False,
     use_augmentation_index_representation=True,
-
+    
     data_aug_meta_name='cat',
     augmentation_num_beams=3,
     data_aug_prefix='cat',
     use_label_metadata=False,
-
+    
     data_meta_batch_size=2048,
     augment_metadata=False,
     num_metadata_augment_warmup_epochs=10,
@@ -118,15 +118,15 @@ bsz = max(args.per_device_train_batch_size, args.per_device_eval_batch_size)*tor
 
 model = RAD005.from_pretrained('distilbert-base-uncased', num_batch_labels=5000, batch_size=100,
                                margin=0.3, num_negatives=10, tau=0.1, apply_softmax=True,
-
-                               data_aug_meta_prefix='hyb2data', lbl2data_aug_meta_prefix=None,
+                               
+                               data_aug_meta_prefix='hyb2data', lbl2data_aug_meta_prefix=None, 
                                data_pred_meta_prefix=None, lbl2data_pred_meta_prefix=None,
 
-                               cross_margin=0.3, cross_tau=0.1, cross_dropout=0.3,
+                               cross_margin=0.3, cross_tau=0.1, cross_dropout=0.1,
 
                                resize_length=5000, use_noise=True, noise_percent=0.5,
-
-                               meta_loss_weight=0.3, fusion_loss_weight=0.1,
+                               
+                               meta_loss_weight=0.3, fusion_loss_weight=0.1, 
                                use_fusion_loss=False,  use_encoder_parallel=False)
 
 model.init_retrieval_head()
@@ -135,7 +135,7 @@ model.init_cross_gate()
 
 # %% ../nbs/76-radga-dr-ep-for-wikiseealso.ipynb 18
 learn = XCLearner(
-    model=model,
+    model=model, 
     args=args,
     train_dataset=block.train.dset,
     eval_dataset=block.test.dset,
