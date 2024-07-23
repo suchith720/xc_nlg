@@ -22,7 +22,6 @@ with open(pkl_file, 'rb') as file: block = pickle.load(file)
 # %% ../nbs/78-radga-dr-ep-for-wikiseealso.ipynb 10
 with open(f'{pkl_dir}/processed/corelations.pkl', 'rb') as file: data_corel, lbl_corel = pickle.load(file)
 
-#| export
 from xcai.data import MetaXCDataset, XCDataset
 from scipy import sparse
 
@@ -52,14 +51,14 @@ block.collator.tfms.tfms[0].smp_features = [('lbl2data|hyb2lbl2data|lco2lbl2data
 args = XCLearningArguments(
     output_dir='/home/scai/phd/aiz218323/scratch/outputs/78-radga-dr-ep-for-wikiseealso-1-0',
     logging_first_step=True,
-    per_device_train_batch_size=800,
+    per_device_train_batch_size=10, #800,
     per_device_eval_batch_size=800,
     representation_num_beams=200,
     representation_accumulation_steps=10,
     save_strategy="steps",
     evaluation_strategy="steps",
-    eval_steps=5000,
-    save_steps=5000,
+    eval_steps=10, #5000,
+    save_steps=10, #5000,
     save_total_limit=5,
     num_train_epochs=300,
     predict_with_representation=True,
@@ -143,7 +142,7 @@ model = RAD006.from_pretrained('sentence-transformers/msmarco-distilbert-base-v4
                                use_calib_loss= True,
                                
                                meta_loss_weight=0.1, fusion_loss_weight=0.1, use_fusion_loss=True,
-                               use_encoder_parallel=True)
+                               use_encoder_parallel=False)
 
 model.init_retrieval_head()
 model.init_cross_head()
@@ -158,7 +157,7 @@ learn = XCLearner(
     compute_metrics=metric,
 )
 
-# %% ../nbs/78-radga-dr-ep-for-wikiseealso.ipynb 34
+# %% ../nbs/78-radga-dr-ep-for-wikiseealso.ipynb 33
 if __name__ == '__main__':
     mp.freeze_support()
     learn.train()
