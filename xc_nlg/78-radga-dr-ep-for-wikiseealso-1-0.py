@@ -19,7 +19,7 @@ pkl_file = f'{pkl_dir}/processed/wikiseealso_data-metas_distilbert-base-uncased_
 # %% ../nbs/78-radga-dr-ep-for-wikiseealso.ipynb 9
 with open(pkl_file, 'rb') as file: block = pickle.load(file)
 
-# %% ../nbs/78-radga-dr-ep-for-wikiseealso.ipynb 10
+# %% ../nbs/78-radga-dr-ep-for-wikiseealso.ipynb 12
 with open(f'{pkl_dir}/processed/corelations.pkl', 'rb') as file: data_corel, lbl_corel = pickle.load(file)
 
 from xcai.data import MetaXCDataset, XCDataset
@@ -30,12 +30,12 @@ lco_meta = MetaXCDataset('lco', sparse.csr_matrix((block.train.dset.n_data, bloc
 
 block.train.dset.meta['lco_meta'] = lco_meta
 
-# %% ../nbs/78-radga-dr-ep-for-wikiseealso.ipynb 11
+# %% ../nbs/78-radga-dr-ep-for-wikiseealso.ipynb 13
 from xcai.data import MetaXCDataset
 block.train.dset.meta['hyb_meta'] = block.train.dset.meta['cat_meta']
 block.test.dset.meta['hyb_meta'] = block.train.dset.meta['lnk_meta']
 
-# %% ../nbs/78-radga-dr-ep-for-wikiseealso.ipynb 12
+# %% ../nbs/78-radga-dr-ep-for-wikiseealso.ipynb 14
 block.train.dset.meta['hyb_meta'] = MetaXCDataset('hyb', block.train.dset.meta['cat_meta'].data_meta, 
                                                   block.train.dset.meta['cat_meta'].lbl_meta,
                                                   block.train.dset.meta['cat_meta'].meta_info)
@@ -43,11 +43,11 @@ block.test.dset.meta['hyb_meta'] = MetaXCDataset('hyb', block.train.dset.meta['l
                                                   block.train.dset.meta['lnk_meta'].lbl_meta,
                                                   block.train.dset.meta['lnk_meta'].meta_info)
 
-# %% ../nbs/78-radga-dr-ep-for-wikiseealso.ipynb 13
+# %% ../nbs/78-radga-dr-ep-for-wikiseealso.ipynb 15
 block.collator.tfms.tfms[0].smp_features = [('lbl2data|hyb2lbl2data|lco2lbl2data', 1, (1,3,1)), 
                                             ('hyb2data',1,3)]
 
-# %% ../nbs/78-radga-dr-ep-for-wikiseealso.ipynb 25
+# %% ../nbs/78-radga-dr-ep-for-wikiseealso.ipynb 41
 args = XCLearningArguments(
     output_dir='/home/scai/phd/aiz218323/scratch/outputs/78-radga-dr-ep-for-wikiseealso-1-0',
     logging_first_step=True,
@@ -121,11 +121,11 @@ args = XCLearningArguments(
     num_metadata_augment_epochs=5,
 )
 
-# %% ../nbs/78-radga-dr-ep-for-wikiseealso.ipynb 26
+# %% ../nbs/78-radga-dr-ep-for-wikiseealso.ipynb 42
 metric = PrecRecl(block.n_lbl, block.test.data_lbl_filterer, prop=block.train.dset.data.data_lbl,
                   pk=10, rk=200, rep_pk=[1, 3, 5, 10], rep_rk=[10, 100, 200])
 
-# %% ../nbs/78-radga-dr-ep-for-wikiseealso.ipynb 28
+# %% ../nbs/78-radga-dr-ep-for-wikiseealso.ipynb 44
 bsz = max(args.per_device_train_batch_size, args.per_device_eval_batch_size)*torch.cuda.device_count()
 
 model = RAD006.from_pretrained('sentence-transformers/msmarco-distilbert-base-v4', batch_size=bsz, num_batch_labels=5000, 
@@ -147,7 +147,7 @@ model = RAD006.from_pretrained('sentence-transformers/msmarco-distilbert-base-v4
 model.init_retrieval_head()
 model.init_cross_head()
 
-# %% ../nbs/78-radga-dr-ep-for-wikiseealso.ipynb 30
+# %% ../nbs/78-radga-dr-ep-for-wikiseealso.ipynb 46
 learn = XCLearner(
     model=model, 
     args=args,
@@ -157,7 +157,7 @@ learn = XCLearner(
     compute_metrics=metric,
 )
 
-# %% ../nbs/78-radga-dr-ep-for-wikiseealso.ipynb 33
+# %% ../nbs/78-radga-dr-ep-for-wikiseealso.ipynb 49
 if __name__ == '__main__':
     mp.freeze_support()
     learn.train()
