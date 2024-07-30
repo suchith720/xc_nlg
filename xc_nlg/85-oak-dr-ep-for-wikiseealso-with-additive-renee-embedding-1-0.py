@@ -130,8 +130,10 @@ model = OAK003.from_pretrained('sentence-transformers/msmarco-distilbert-base-v4
 model.init_retrieval_head()
 model.init_cross_head()
 
-model.encoder.set_meta_embeddings(torch.zeros(656086, 768))
+model.encoder.set_pretrained_meta_embeddings(torch.zeros(656086, 768))
 model.encoder.freeze_pretrained_meta_embeddings()
+
+model.init_meta_embeddings()
 
 # %% ../nbs/85-oak-dr-ep-for-wikiseealso-with-additive-renee-embedding.ipynb 18
 learn = XCLearner(

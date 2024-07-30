@@ -9,7 +9,7 @@ from transformers import DistilBertConfig
 
 from xcai.basics import *
 from xcai.models.oak import OAK001
-from xcai.models.distillation import DTL004,TCH002
+from xcai.models.distillation import DTL004,TCH001
 
 from xclib.utils.sparse import retain_topk
 
@@ -101,11 +101,19 @@ args = XCLearningArguments(
 
 # %% ../nbs/86-distillation-for-wikiseealso-with-oak.ipynb 10
 model_output = '/home/scai/phd/aiz218323/scratch/outputs/67-ngame-ep-for-wikiseealso-with-input-concatenation-1-4'
-m_teacher = TCH002.from_pretrained(f'{model_output}/teacher', n_data=block.train.dset.n_data, n_lbl=block.n_lbl)
+m_teacher = TCH001.from_pretrained(f'{model_output}/teacher', n_data=block.train.dset.n_data, n_lbl=block.n_lbl)
 
 m_teacher.freeze_embeddings()
+m_teacher.freeze_data_embeddings()
 
 # %% ../nbs/86-distillation-for-wikiseealso-with-oak.ipynb 11
+model_output = '/home/scai/phd/aiz218323/scratch/outputs/67-ngame-ep-for-wikiseealso-with-input-concatenation-1-4'
+m_teacher = TCH002.from_pretrained(f'{model_output}/teacher', n_data=block.train.dset.n_data, n_lbl=block.n_lbl)
+
+m_teacher.freeze_representations()
+m_teacher.init_lbl_embeddings()
+
+# %% ../nbs/86-distillation-for-wikiseealso-with-oak.ipynb 12
 bsz = max(args.per_device_train_batch_size, args.per_device_eval_batch_size)*torch.cuda.device_count()
 
 m_student = OAK001.from_pretrained('sentence-transformers/msmarco-distilbert-cos-v5', batch_size=bsz, num_batch_labels=5000, 
@@ -130,19 +138,19 @@ m_student = OAK001.from_pretrained('sentence-transformers/msmarco-distilbert-cos
 m_student.init_retrieval_head()
 m_student.init_cross_head()
 
-m_student.encoder.set_meta_embeddings(torch.zeros(block.train.dset.meta['lnk_meta'].n_meta, model.config.dim))
+m_student.encoder.set_meta_embeddings(torch.zeros(block.train.dset.meta['lnk_meta'].n_meta, m_student.config.dim))
 
-# %% ../nbs/86-distillation-for-wikiseealso-with-oak.ipynb 13
+# %% ../nbs/86-distillation-for-wikiseealso-with-oak.ipynb 14
 model = DTL004(DistilBertConfig(), m_student=m_student, m_teacher=m_teacher, bsz=bsz, tn_targ=5000, margin=0.3, tau=0.1, 
                n_negatives=10, apply_softmax=True, teacher_data_student_label_loss_weight=1.0, 
                student_data_teacher_label_loss_weight=1.0, data_mse_loss_weight=0.1, label_mse_loss_weight=0.0)
 
 
-# %% ../nbs/86-distillation-for-wikiseealso-with-oak.ipynb 14
+# %% ../nbs/86-distillation-for-wikiseealso-with-oak.ipynb 15
 metric = PrecRecl(block.n_lbl, block.test.data_lbl_filterer, prop=block.train.dset.data.data_lbl,
                   pk=10, rk=200, rep_pk=[1, 3, 5, 10], rep_rk=[10, 100, 200])
 
-# %% ../nbs/86-distillation-for-wikiseealso-with-oak.ipynb 15
+# %% ../nbs/86-distillation-for-wikiseealso-with-oak.ipynb 16
 learn = XCLearner(
     model=model, 
     args=args,
@@ -152,7 +160,7 @@ learn = XCLearner(
     compute_metrics=metric,
 )
 
-# %% ../nbs/86-distillation-for-wikiseealso-with-oak.ipynb 17
+# %% ../nbs/86-distillation-for-wikiseealso-with-oak.ipynb 18
 if __name__ == '__main__':
     mp.freeze_support()
     learn.train()
