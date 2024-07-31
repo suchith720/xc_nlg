@@ -20,19 +20,23 @@ def load_pred(fname):
 data_dir = '/home/scai/phd/aiz218323/Projects/XC_NLG/data/(mapped)LF-WikiSeeAlsoTitles-320K/'
 
 pred_name = f'{data_dir}/category_renee_trn_X_Y.npz'
-preds = retain_topk(load_pred(pred_name), k=5)
+# preds = retain_topk(load_pred(pred_name), k=5)
+
+preds = load_pred(pred_name)
 du.write_sparse_file(preds, f'{data_dir}/category_renee_trn_X_Y.txt')
 
-# %% ../nbs/74-convert-predictions-to-dataset.ipynb 7
+# %% ../nbs/74-convert-predictions-to-dataset.ipynb 9
 pred_name = f'{data_dir}/category_renee_tst_X_Y.npz'
-preds = retain_topk(load_pred(pred_name), k=5)
+# preds = retain_topk(load_pred(pred_name), k=5)
+
+preds = load_pred(pred_name)
 du.write_sparse_file(preds, f'{data_dir}/category_renee_tst_X_Y.txt')
 
-# %% ../nbs/74-convert-predictions-to-dataset.ipynb 8
+# %% ../nbs/74-convert-predictions-to-dataset.ipynb 10
 preds = sparse.csr_matrix((312330, preds.shape[1]))
 du.write_sparse_file(preds, f'{data_dir}/category_renee_lbl_X_Y.txt')
 
-# %% ../nbs/74-convert-predictions-to-dataset.ipynb 11
+# %% ../nbs/74-convert-predictions-to-dataset.ipynb 13
 data_dir = '/home/scai/phd/aiz218323/Projects/XC_NLG/data/(mapped)LF-WikiTitles-500K'
 
 pred_name = f'{data_dir}/hyper_link_renee_trn_X_Y.npz'
