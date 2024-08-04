@@ -29,7 +29,7 @@ data_meta = retain_topk(block.test.dset.meta.lnk_meta.data_meta, k=3)
 block.test.dset.meta.lnk_meta.curr_data_meta = data_meta
 block.test.dset.meta.lnk_meta.data_meta = data_meta
 
-# %% ../nbs/85-oak-dr-ep-for-wikiseealso-with-additive-renee-embedding.ipynb 13
+# %% ../nbs/85-oak-dr-ep-for-wikiseealso-with-additive-renee-embedding.ipynb 12
 args = XCLearningArguments(
     output_dir='/home/scai/phd/aiz218323/scratch/outputs/85-oak-dr-ep-for-wikiseealso-with-additive-renee-embedding-1-0',
     logging_first_step=True,
@@ -102,11 +102,11 @@ args = XCLearningArguments(
     num_metadata_augment_epochs=5,
 )
 
-# %% ../nbs/85-oak-dr-ep-for-wikiseealso-with-additive-renee-embedding.ipynb 14
+# %% ../nbs/85-oak-dr-ep-for-wikiseealso-with-additive-renee-embedding.ipynb 13
 metric = PrecRecl(block.n_lbl, block.test.data_lbl_filterer, prop=block.train.dset.data.data_lbl,
                   pk=10, rk=200, rep_pk=[1, 3, 5, 10], rep_rk=[10, 100, 200])
 
-# %% ../nbs/85-oak-dr-ep-for-wikiseealso-with-additive-renee-embedding.ipynb 16
+# %% ../nbs/85-oak-dr-ep-for-wikiseealso-with-additive-renee-embedding.ipynb 15
 bsz = max(args.per_device_train_batch_size, args.per_device_eval_batch_size)*torch.cuda.device_count()
 
 model = OAK003.from_pretrained('sentence-transformers/msmarco-distilbert-base-v4', batch_size=bsz, num_batch_labels=5000, 
@@ -135,7 +135,7 @@ model.encoder.freeze_pretrained_meta_embeddings()
 
 model.init_meta_embeddings()
 
-# %% ../nbs/85-oak-dr-ep-for-wikiseealso-with-additive-renee-embedding.ipynb 18
+# %% ../nbs/85-oak-dr-ep-for-wikiseealso-with-additive-renee-embedding.ipynb 17
 learn = XCLearner(
     model=model, 
     args=args,
@@ -145,7 +145,7 @@ learn = XCLearner(
     compute_metrics=metric,
 )
 
-# %% ../nbs/85-oak-dr-ep-for-wikiseealso-with-additive-renee-embedding.ipynb 21
+# %% ../nbs/85-oak-dr-ep-for-wikiseealso-with-additive-renee-embedding.ipynb 20
 if __name__ == '__main__':
     mp.freeze_support()
     learn.train()
