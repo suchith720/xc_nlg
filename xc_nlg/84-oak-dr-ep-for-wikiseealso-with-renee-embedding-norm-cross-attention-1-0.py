@@ -6,7 +6,7 @@ __all__ = ['pkl_dir', 'pkl_file', 'data_meta', 'args', 'metric', 'bsz', 'model',
 # %% ../nbs/84-oak-dr-ep-for-wikiseealso-with-renee-embedding-norm-cross-attention.ipynb 3
 import os,torch, torch.multiprocessing as mp, pickle
 from xcai.basics import *
-from xcai.models.oak import OAK001
+from xcai.models.oak import OAK004
 from xclib.utils.sparse import retain_topk
 
 # %% ../nbs/84-oak-dr-ep-for-wikiseealso-with-renee-embedding-norm-cross-attention.ipynb 5
@@ -21,7 +21,7 @@ pkl_file = f'{pkl_dir}/processed/wikiseealso_data-metas_distilbert-base-uncased_
 with open(pkl_file, 'rb') as file: block = pickle.load(file)
 
 # %% ../nbs/84-oak-dr-ep-for-wikiseealso-with-renee-embedding-norm-cross-attention.ipynb 10
-data_meta = retain_topk(block.train.dset.meta.lnk_meta.data_meta, k=10)
+data_meta = retain_topk(block.train.dset.meta.lnk_meta.data_meta, k=5)
 block.train.dset.meta.lnk_meta.curr_data_meta = data_meta
 block.train.dset.meta.lnk_meta.data_meta = data_meta
 
@@ -29,7 +29,7 @@ data_meta = retain_topk(block.test.dset.meta.lnk_meta.data_meta, k=3)
 block.test.dset.meta.lnk_meta.curr_data_meta = data_meta
 block.test.dset.meta.lnk_meta.data_meta = data_meta
 
-# %% ../nbs/84-oak-dr-ep-for-wikiseealso-with-renee-embedding-norm-cross-attention.ipynb 13
+# %% ../nbs/84-oak-dr-ep-for-wikiseealso-with-renee-embedding-norm-cross-attention.ipynb 12
 args = XCLearningArguments(
     output_dir='/home/scai/phd/aiz218323/scratch/outputs/84-oak-dr-ep-for-wikiseealso-with-renee-embedding-norm-cross-attention-1-0',
     logging_first_step=True,
@@ -102,25 +102,25 @@ args = XCLearningArguments(
     num_metadata_augment_epochs=5,
 )
 
-# %% ../nbs/84-oak-dr-ep-for-wikiseealso-with-renee-embedding-norm-cross-attention.ipynb 14
+# %% ../nbs/84-oak-dr-ep-for-wikiseealso-with-renee-embedding-norm-cross-attention.ipynb 13
 metric = PrecRecl(block.n_lbl, block.test.data_lbl_filterer, prop=block.train.dset.data.data_lbl,
                   pk=10, rk=200, rep_pk=[1, 3, 5, 10], rep_rk=[10, 100, 200])
 
-# %% ../nbs/84-oak-dr-ep-for-wikiseealso-with-renee-embedding-norm-cross-attention.ipynb 16
+# %% ../nbs/84-oak-dr-ep-for-wikiseealso-with-renee-embedding-norm-cross-attention.ipynb 15
 bsz = max(args.per_device_train_batch_size, args.per_device_eval_batch_size)*torch.cuda.device_count()
 
-model = OAK002.from_pretrained('sentence-transformers/msmarco-distilbert-base-v4', batch_size=bsz, num_batch_labels=5000, 
-                               margin=0.3, num_negatives=5, tau=0.1, apply_softmax=True,
+model = OAK004.from_pretrained('sentence-transformers/msmarco-distilbert-base-v4', batch_size=bsz, num_batch_labels=5000, 
+                               margin=0.3, num_negatives=10, tau=0.1, apply_softmax=True,
                                
                                data_aug_meta_prefix='lnk2data', lbl2data_aug_meta_prefix=None, 
                                data_pred_meta_prefix=None, lbl2data_pred_meta_prefix=None,
                                
                                num_metadata=block.train.dset.meta['lnk_meta'].n_meta, resize_length=5000,
                                
-                               calib_margin=0.3, calib_num_negatives=10, calib_tau=0.1, calib_apply_softmax=True, 
-                               calib_loss_weight=0.1, use_calib_loss=False,
+                               calib_margin=0.05, calib_num_negatives=10, calib_tau=0.1, calib_apply_softmax=False, 
+                               calib_loss_weight=0.1, use_calib_loss=True,
 
-                               cross_margin=0.3, cross_tau=0.1, cross_dropout=0.1,
+                               cross_tau=1.0, cross_dropout=0.1,
 
                                use_query_loss=True,
 
@@ -128,13 +128,16 @@ model = OAK002.from_pretrained('sentence-transformers/msmarco-distilbert-base-v4
                                
                                fusion_loss_weight=0.1, use_fusion_loss=False,
                                
-                               use_encoder_parallel=True)
+                               use_encoder_parallel=False)
+
 model.init_retrieval_head()
 model.init_cross_head()
+model.init_meta_embeddings()
 
-model.encoder.set_meta_embeddings(torch.zeros(block.train.dset.meta['lnk_meta'].n_meta, model.config.dim))
+model.encoder.set_pretrained_meta_embeddings(torch.zeros(656086, 768))
+model.encoder.freeze_pretrained_meta_embeddings()
 
-# %% ../nbs/84-oak-dr-ep-for-wikiseealso-with-renee-embedding-norm-cross-attention.ipynb 18
+# %% ../nbs/84-oak-dr-ep-for-wikiseealso-with-renee-embedding-norm-cross-attention.ipynb 17
 learn = XCLearner(
     model=model, 
     args=args,
