@@ -21,7 +21,7 @@ pkl_file = f'{pkl_dir}/processed/wikiseealso_data-metas_distilbert-base-uncased_
 with open(pkl_file, 'rb') as file: block = pickle.load(file)
 
 # %% ../nbs/82-radga-dr-ep-for-wikiseealso-with-renee-embedding.ipynb 10
-data_meta = retain_topk(block.train.dset.meta.lnk_meta.data_meta, k=10)
+data_meta = retain_topk(block.train.dset.meta.lnk_meta.data_meta, k=5)
 block.train.dset.meta.lnk_meta.curr_data_meta = data_meta
 block.train.dset.meta.lnk_meta.data_meta = data_meta
 
@@ -120,15 +120,14 @@ model = RAD008.from_pretrained('sentence-transformers/msmarco-distilbert-base-v4
                                
                                use_query_loss=True,
 
-                               calib_margin=0.3, calib_num_negatives=10, calib_tau=0.1, calib_apply_softmax=True, calib_loss_weight=0.1,
-                               use_calib_loss=False,
+                               calib_margin=0.05, calib_num_negatives=10, calib_tau=0.1, calib_apply_softmax=False, calib_loss_weight=0.1,
+                               use_calib_loss=True,
                                
                                meta_loss_weight=0.0, fusion_loss_weight=0.0, use_fusion_loss=False,
                                use_encoder_parallel=False)
 
 model.init_retrieval_head()
 model.init_cross_head()
-model.init_fusion_layer_norm()
 
 model.encoder.set_meta_embeddings(torch.zeros(block.train.dset.meta['lnk_meta'].n_meta, model.config.dim))
 model.encoder.freeze_meta_embeddings()
@@ -143,7 +142,7 @@ learn = XCLearner(
     compute_metrics=metric,
 )
 
-# %% ../nbs/82-radga-dr-ep-for-wikiseealso-with-renee-embedding.ipynb 22
+# %% ../nbs/82-radga-dr-ep-for-wikiseealso-with-renee-embedding.ipynb 24
 if __name__ == '__main__':
     mp.freeze_support()
     learn.train()
