@@ -33,14 +33,14 @@ block.test.dset.meta.lnk_meta.data_meta = data_meta
 args = XCLearningArguments(
     output_dir='/home/scai/phd/aiz218323/scratch/outputs/82-radga-dr-ep-for-wikiseealso-with-renee-embedding-1-0',
     logging_first_step=True,
-    per_device_train_batch_size=10, #800,
+    per_device_train_batch_size=800,
     per_device_eval_batch_size=800,
     representation_num_beams=200,
     representation_accumulation_steps=10,
     save_strategy="steps",
     evaluation_strategy="steps",
-    eval_steps=10, #5000,
-    save_steps=10, #5000,
+    eval_steps=5000,
+    save_steps=5000,
     save_total_limit=5,
     num_train_epochs=300,
     predict_with_representation=True,
@@ -142,7 +142,7 @@ learn = XCLearner(
     compute_metrics=metric,
 )
 
-# %% ../nbs/82-radga-dr-ep-for-wikiseealso-with-renee-embedding.ipynb 24
+# %% ../nbs/82-radga-dr-ep-for-wikiseealso-with-renee-embedding.ipynb 22
 if __name__ == '__main__':
     mp.freeze_support()
     learn.train()
