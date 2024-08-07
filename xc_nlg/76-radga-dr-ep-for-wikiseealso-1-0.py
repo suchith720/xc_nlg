@@ -16,15 +16,15 @@ os.environ['WANDB_PROJECT']='xc-nlg_66-radga-dr-ep-for-wikiseealso-2'
 pkl_dir = '/home/scai/phd/aiz218323/scratch/datasets/'
 pkl_file = f'{pkl_dir}/processed/wikiseealso_data-metas_distilbert-base-uncased_rm_radga-cat-linker.pkl'
 
-# %% ../nbs/76-radga-dr-ep-for-wikiseealso.ipynb 9
+# %% ../nbs/76-radga-dr-ep-for-wikiseealso.ipynb 8
 with open(pkl_file, 'rb') as file: block = pickle.load(file)
 
-# %% ../nbs/76-radga-dr-ep-for-wikiseealso.ipynb 10
+# %% ../nbs/76-radga-dr-ep-for-wikiseealso.ipynb 9
 from xcai.data import MetaXCDataset
 block.train.dset.meta['hyb_meta'] = block.train.dset.meta['cat_meta']
 block.test.dset.meta['hyb_meta'] = block.train.dset.meta['lnk_meta']
 
-# %% ../nbs/76-radga-dr-ep-for-wikiseealso.ipynb 11
+# %% ../nbs/76-radga-dr-ep-for-wikiseealso.ipynb 10
 block.train.dset.meta['hyb_meta'] = MetaXCDataset('hyb', block.train.dset.meta['cat_meta'].data_meta, 
                                                   block.train.dset.meta['cat_meta'].lbl_meta,
                                                   block.train.dset.meta['cat_meta'].meta_info)
@@ -32,7 +32,7 @@ block.test.dset.meta['hyb_meta'] = MetaXCDataset('hyb', block.train.dset.meta['l
                                                   block.train.dset.meta['lnk_meta'].lbl_meta,
                                                   block.train.dset.meta['lnk_meta'].meta_info)
 
-# %% ../nbs/76-radga-dr-ep-for-wikiseealso.ipynb 12
+# %% ../nbs/76-radga-dr-ep-for-wikiseealso.ipynb 11
 block.collator.tfms.tfms[0].smp_features = [('lbl2data|cat2lbl2data|lnk2lbl2data|hyb2lbl2data', 1, (1,3,3,3)), 
                                             ('cat2data',1,3), ('lnk2data',1,3), ('hyb2data',1,3)]
 

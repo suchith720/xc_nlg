@@ -17,10 +17,10 @@ os.environ['WANDB_PROJECT']='xc-nlg_66-radga-dr-ep-for-wikiseealso-2'
 pkl_dir = '/home/scai/phd/aiz218323/scratch/datasets/'
 pkl_file = f'{pkl_dir}/processed/wikiseealso_data-metas_distilbert-base-uncased_rm_radga-cat-linker.pkl'
 
-# %% ../nbs/82-radga-dr-ep-for-wikiseealso-with-renee-embedding.ipynb 9
+# %% ../nbs/82-radga-dr-ep-for-wikiseealso-with-renee-embedding.ipynb 8
 with open(pkl_file, 'rb') as file: block = pickle.load(file)
 
-# %% ../nbs/82-radga-dr-ep-for-wikiseealso-with-renee-embedding.ipynb 10
+# %% ../nbs/82-radga-dr-ep-for-wikiseealso-with-renee-embedding.ipynb 9
 data_meta = retain_topk(block.train.dset.meta.lnk_meta.data_meta, k=5)
 block.train.dset.meta.lnk_meta.curr_data_meta = data_meta
 block.train.dset.meta.lnk_meta.data_meta = data_meta
@@ -29,7 +29,7 @@ data_meta = retain_topk(block.test.dset.meta.lnk_meta.data_meta, k=3)
 block.test.dset.meta.lnk_meta.curr_data_meta = data_meta
 block.test.dset.meta.lnk_meta.data_meta = data_meta
 
-# %% ../nbs/82-radga-dr-ep-for-wikiseealso-with-renee-embedding.ipynb 13
+# %% ../nbs/82-radga-dr-ep-for-wikiseealso-with-renee-embedding.ipynb 17
 args = XCLearningArguments(
     output_dir='/home/scai/phd/aiz218323/scratch/outputs/82-radga-dr-ep-for-wikiseealso-with-renee-embedding-1-0',
     logging_first_step=True,
@@ -102,11 +102,11 @@ args = XCLearningArguments(
     num_metadata_augment_epochs=5,
 )
 
-# %% ../nbs/82-radga-dr-ep-for-wikiseealso-with-renee-embedding.ipynb 14
+# %% ../nbs/82-radga-dr-ep-for-wikiseealso-with-renee-embedding.ipynb 18
 metric = PrecRecl(block.n_lbl, block.test.data_lbl_filterer, prop=block.train.dset.data.data_lbl,
                   pk=10, rk=200, rep_pk=[1, 3, 5, 10], rep_rk=[10, 100, 200])
 
-# %% ../nbs/82-radga-dr-ep-for-wikiseealso-with-renee-embedding.ipynb 16
+# %% ../nbs/82-radga-dr-ep-for-wikiseealso-with-renee-embedding.ipynb 20
 bsz = max(args.per_device_train_batch_size, args.per_device_eval_batch_size)*torch.cuda.device_count()
 
 model = RAD008.from_pretrained('sentence-transformers/msmarco-distilbert-base-v4', batch_size=bsz, num_batch_labels=5000, 
@@ -132,7 +132,7 @@ model.init_cross_head()
 model.encoder.set_meta_embeddings(torch.zeros(block.train.dset.meta['lnk_meta'].n_meta, model.config.dim))
 model.encoder.freeze_meta_embeddings()
 
-# %% ../nbs/82-radga-dr-ep-for-wikiseealso-with-renee-embedding.ipynb 18
+# %% ../nbs/82-radga-dr-ep-for-wikiseealso-with-renee-embedding.ipynb 22
 learn = XCLearner(
     model=model, 
     args=args,
@@ -142,7 +142,7 @@ learn = XCLearner(
     compute_metrics=metric,
 )
 
-# %% ../nbs/82-radga-dr-ep-for-wikiseealso-with-renee-embedding.ipynb 22
+# %% ../nbs/82-radga-dr-ep-for-wikiseealso-with-renee-embedding.ipynb 26
 if __name__ == '__main__':
     mp.freeze_support()
     learn.train()

@@ -4,7 +4,7 @@
 __all__ = ['data_dir', 'pkl_file', 'args', 'metric', 'output_dir', 'mname', 'bsz', 'model', 'learn', 'o']
 
 # %% ../nbs/72-1-radga-dr-ep-for-wikiseealso.ipynb 3
-import os,torch, torch.multiprocessing as mp, pickle
+import os,torch, torch.multiprocessing as mp, pickle, torch.nn as nn
 from xcai.basics import *
 from xcai.models.radga import RAD002
 
@@ -19,10 +19,10 @@ os.environ['WANDB_PROJECT']='xc-nlg_66-radga-dr-ep-for-wikiseealso-2'
 data_dir = '/home/scai/phd/aiz218323/scratch/datasets/'
 pkl_file = f'{pkl_dir}/processed/wikiseealso_data-metas_distilbert-base-uncased_rm_radga-cat-linker.pkl'
 
-# %% ../nbs/72-1-radga-dr-ep-for-wikiseealso.ipynb 14
+# %% ../nbs/72-1-radga-dr-ep-for-wikiseealso.ipynb 13
 with open(pkl_file, 'rb') as file: block = pickle.load(file)
 
-# %% ../nbs/72-1-radga-dr-ep-for-wikiseealso.ipynb 22
+# %% ../nbs/72-1-radga-dr-ep-for-wikiseealso.ipynb 19
 args = XCLearningArguments(
     output_dir='/home/scai/phd/aiz218323/scratch/outputs/72-radga-dr-ep-for-wikiseealso-1-0',
     logging_first_step=True,
@@ -44,7 +44,7 @@ args = XCLearningArguments(
     generation_num_beams=10,
     generation_length_penalty=1.5,
     predict_with_generation=True,
-    representation_search_type='INDEX',
+    representation_search_type='BRUTEFORCE',
     
     output_representation_attribute='data_fused_repr',
     label_representation_attribute='data_repr',
@@ -81,8 +81,8 @@ args = XCLearningArguments(
     prune_metadata_names=['cat_meta'],
     use_data_metadata_for_pruning=True,
 
-    predict_with_augmentation=False,
-    use_augmentation_index_representation=True,
+    predict_with_augmentation=True,
+    use_augmentation_index_representation=False,
     
     data_aug_meta_name='cat',
     augmentation_num_beams=3,
@@ -95,15 +95,15 @@ args = XCLearningArguments(
     num_metadata_augment_epochs=5,
 )
 
-# %% ../nbs/72-1-radga-dr-ep-for-wikiseealso.ipynb 23
+# %% ../nbs/72-1-radga-dr-ep-for-wikiseealso.ipynb 20
 metric = PrecRecl(block.n_lbl, block.test.data_lbl_filterer, prop=block.train.dset.data.data_lbl,
                   pk=10, rk=200, rep_pk=[1, 3, 5, 10], rep_rk=[10, 100, 200])
 
-# %% ../nbs/72-1-radga-dr-ep-for-wikiseealso.ipynb 24
+# %% ../nbs/72-1-radga-dr-ep-for-wikiseealso.ipynb 21
 output_dir = f"/home/scai/phd/aiz218323/scratch/outputs/{os.path.basename(args.output_dir)}"
 mname = f'{output_dir}/{os.path.basename(get_best_model(output_dir))}'
 
-# %% ../nbs/72-1-radga-dr-ep-for-wikiseealso.ipynb 25
+# %% ../nbs/72-1-radga-dr-ep-for-wikiseealso.ipynb 22
 bsz = max(args.per_device_train_batch_size, args.per_device_eval_batch_size)*torch.cuda.device_count()
 
 model = RAD002.from_pretrained(mname, num_batch_labels=5000, batch_size=bsz,
@@ -112,12 +112,13 @@ model = RAD002.from_pretrained(mname, num_batch_labels=5000, batch_size=bsz,
                                data_aug_meta_prefix='cat2data', lbl2data_aug_meta_prefix=None, 
                                data_pred_meta_prefix=None, lbl2data_pred_meta_prefix=None,
                                
-                               resize_length=5000, use_noise=True, noise_percent=0.5,
+                               resize_length=5000, use_noise=False, noise_percent=0.5,
                                
-                               meta_loss_weight=0.3, fusion_loss_weight=0.1, 
-                               use_fusion_loss=False,  use_encoder_parallel=True)
+                               meta_loss_weight=0.3, fusion_loss_weight=0.1, use_fusion_loss=False,  
+                               
+                               use_encoder_parallel=True)
 
-# %% ../nbs/72-1-radga-dr-ep-for-wikiseealso.ipynb 27
+# %% ../nbs/72-1-radga-dr-ep-for-wikiseealso.ipynb 24
 learn = XCLearner(
     model=model, 
     args=args,
@@ -127,6 +128,6 @@ learn = XCLearner(
     compute_metrics=metric,
 )
 
-# %% ../nbs/72-1-radga-dr-ep-for-wikiseealso.ipynb 29
+# %% ../nbs/72-1-radga-dr-ep-for-wikiseealso.ipynb 26
 o = learn.predict(block.test.dset)
 print(o.metrics)
