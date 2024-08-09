@@ -8,21 +8,21 @@ import os,torch, torch.multiprocessing as mp, pickle, torch.nn as nn
 from xcai.basics import *
 from xcai.models.radga import RAD002
 
-# %% ../nbs/72-1-radga-dr-ep-for-wikiseealso.ipynb 4
+# %% ../nbs/72-1-radga-dr-ep-for-wikiseealso.ipynb 6
 os.environ['WANDB_MODE'] = 'disabled'
 
-# %% ../nbs/72-1-radga-dr-ep-for-wikiseealso.ipynb 5
+# %% ../nbs/72-1-radga-dr-ep-for-wikiseealso.ipynb 7
 os.environ['CUDA_VISIBLE_DEVICES'] = '0,1'
 os.environ['WANDB_PROJECT']='xc-nlg_66-radga-dr-ep-for-wikiseealso-2'
 
-# %% ../nbs/72-1-radga-dr-ep-for-wikiseealso.ipynb 10
+# %% ../nbs/72-1-radga-dr-ep-for-wikiseealso.ipynb 12
 data_dir = '/home/scai/phd/aiz218323/scratch/datasets/'
 pkl_file = f'{pkl_dir}/processed/wikiseealso_data-metas_distilbert-base-uncased_rm_radga-cat-linker.pkl'
 
-# %% ../nbs/72-1-radga-dr-ep-for-wikiseealso.ipynb 13
+# %% ../nbs/72-1-radga-dr-ep-for-wikiseealso.ipynb 15
 with open(pkl_file, 'rb') as file: block = pickle.load(file)
 
-# %% ../nbs/72-1-radga-dr-ep-for-wikiseealso.ipynb 19
+# %% ../nbs/72-1-radga-dr-ep-for-wikiseealso.ipynb 21
 args = XCLearningArguments(
     output_dir='/home/scai/phd/aiz218323/scratch/outputs/72-radga-dr-ep-for-wikiseealso-1-0',
     logging_first_step=True,
@@ -95,15 +95,15 @@ args = XCLearningArguments(
     num_metadata_augment_epochs=5,
 )
 
-# %% ../nbs/72-1-radga-dr-ep-for-wikiseealso.ipynb 20
+# %% ../nbs/72-1-radga-dr-ep-for-wikiseealso.ipynb 22
 metric = PrecRecl(block.n_lbl, block.test.data_lbl_filterer, prop=block.train.dset.data.data_lbl,
                   pk=10, rk=200, rep_pk=[1, 3, 5, 10], rep_rk=[10, 100, 200])
 
-# %% ../nbs/72-1-radga-dr-ep-for-wikiseealso.ipynb 21
+# %% ../nbs/72-1-radga-dr-ep-for-wikiseealso.ipynb 23
 output_dir = f"/home/scai/phd/aiz218323/scratch/outputs/{os.path.basename(args.output_dir)}"
 mname = f'{output_dir}/{os.path.basename(get_best_model(output_dir))}'
 
-# %% ../nbs/72-1-radga-dr-ep-for-wikiseealso.ipynb 22
+# %% ../nbs/72-1-radga-dr-ep-for-wikiseealso.ipynb 24
 bsz = max(args.per_device_train_batch_size, args.per_device_eval_batch_size)*torch.cuda.device_count()
 
 model = RAD002.from_pretrained(mname, num_batch_labels=5000, batch_size=bsz,
@@ -118,7 +118,7 @@ model = RAD002.from_pretrained(mname, num_batch_labels=5000, batch_size=bsz,
                                
                                use_encoder_parallel=True)
 
-# %% ../nbs/72-1-radga-dr-ep-for-wikiseealso.ipynb 24
+# %% ../nbs/72-1-radga-dr-ep-for-wikiseealso.ipynb 26
 learn = XCLearner(
     model=model, 
     args=args,
@@ -128,6 +128,6 @@ learn = XCLearner(
     compute_metrics=metric,
 )
 
-# %% ../nbs/72-1-radga-dr-ep-for-wikiseealso.ipynb 26
+# %% ../nbs/72-1-radga-dr-ep-for-wikiseealso.ipynb 28
 o = learn.predict(block.test.dset)
 print(o.metrics)
