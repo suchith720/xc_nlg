@@ -19,10 +19,10 @@ os.environ['WANDB_PROJECT']='xc-nlg_66-radga-dr-ep-for-wikiseealso-2'
 pkl_dir = '/home/scai/phd/aiz218323/scratch/datasets/'
 pkl_file = f'{pkl_dir}/processed/wikiseealso_data-linker_distilbert-base-uncased_rm_oak-linker.pkl'
 
-# %% ../nbs/92-radga-dr-ep-for-wikiseealso-lora.ipynb 9
+# %% ../nbs/92-radga-dr-ep-for-wikiseealso-lora.ipynb 8
 with open(pkl_file, 'rb') as file: block = pickle.load(file)
 
-# %% ../nbs/92-radga-dr-ep-for-wikiseealso-lora.ipynb 11
+# %% ../nbs/92-radga-dr-ep-for-wikiseealso-lora.ipynb 10
 data_meta = retain_topk(block.train.dset.meta.lnk_meta.data_meta, k=5)
 block.train.dset.meta.lnk_meta.data_meta = data_meta
 block.train.dset.meta.lnk_meta.curr_data_meta = data_meta
@@ -31,7 +31,7 @@ data_meta = retain_topk(block.test.dset.meta.lnk_meta.data_meta, k=3)
 block.test.dset.meta.lnk_meta.data_meta = data_meta
 block.test.dset.meta.lnk_meta.curr_data_meta = data_meta
 
-# %% ../nbs/92-radga-dr-ep-for-wikiseealso-lora.ipynb 14
+# %% ../nbs/92-radga-dr-ep-for-wikiseealso-lora.ipynb 13
 args = XCLearningArguments(
     output_dir='/home/scai/phd/aiz218323/scratch/outputs/92-radga-dr-ep-for-wikiseealso-lora-1-0',
     logging_first_step=True,
@@ -104,11 +104,11 @@ args = XCLearningArguments(
     num_metadata_augment_epochs=5,
 )
 
-# %% ../nbs/92-radga-dr-ep-for-wikiseealso-lora.ipynb 15
+# %% ../nbs/92-radga-dr-ep-for-wikiseealso-lora.ipynb 14
 metric = PrecRecl(block.n_lbl, block.test.data_lbl_filterer, prop=block.train.dset.data.data_lbl,
                   pk=10, rk=200, rep_pk=[1, 3, 5, 10], rep_rk=[10, 100, 200])
 
-# %% ../nbs/92-radga-dr-ep-for-wikiseealso-lora.ipynb 17
+# %% ../nbs/92-radga-dr-ep-for-wikiseealso-lora.ipynb 16
 bsz = max(args.per_device_train_batch_size, args.per_device_eval_batch_size)*torch.cuda.device_count()
 
 base_model = DistilBertModel.from_pretrained('sentence-transformers/msmarco-distilbert-base-v4')
@@ -135,12 +135,12 @@ learn = XCLearner(
     model=model, 
     args=args,
     train_dataset=block.train.dset,
-    eval_dataset=block.test.dset,
+    eval_dataset=test_dset, #block.test.dset,
     data_collator=block.collator,
     compute_metrics=metric,
 )
 
-# %% ../nbs/92-radga-dr-ep-for-wikiseealso-lora.ipynb 23
+# %% ../nbs/92-radga-dr-ep-for-wikiseealso-lora.ipynb 25
 if __name__ == '__main__':
     mp.freeze_support()
     learn.train()
