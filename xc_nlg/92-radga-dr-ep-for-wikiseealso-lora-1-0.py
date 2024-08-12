@@ -11,18 +11,18 @@ from xclib.utils.sparse import retain_topk
 
 from transformers import DistilBertConfig,DistilBertModel
 
-# %% ../nbs/92-radga-dr-ep-for-wikiseealso-lora.ipynb 5
+# %% ../nbs/92-radga-dr-ep-for-wikiseealso-lora.ipynb 6
 os.environ['CUDA_VISIBLE_DEVICES'] = '0,1'
 os.environ['WANDB_PROJECT']='xc-nlg_66-radga-dr-ep-for-wikiseealso-2'
 
-# %% ../nbs/92-radga-dr-ep-for-wikiseealso-lora.ipynb 7
+# %% ../nbs/92-radga-dr-ep-for-wikiseealso-lora.ipynb 8
 pkl_dir = '/home/scai/phd/aiz218323/scratch/datasets/'
 pkl_file = f'{pkl_dir}/processed/wikiseealso_data-linker_distilbert-base-uncased_rm_oak-linker.pkl'
 
-# %% ../nbs/92-radga-dr-ep-for-wikiseealso-lora.ipynb 8
+# %% ../nbs/92-radga-dr-ep-for-wikiseealso-lora.ipynb 9
 with open(pkl_file, 'rb') as file: block = pickle.load(file)
 
-# %% ../nbs/92-radga-dr-ep-for-wikiseealso-lora.ipynb 10
+# %% ../nbs/92-radga-dr-ep-for-wikiseealso-lora.ipynb 11
 data_meta = retain_topk(block.train.dset.meta.lnk_meta.data_meta, k=5)
 block.train.dset.meta.lnk_meta.data_meta = data_meta
 block.train.dset.meta.lnk_meta.curr_data_meta = data_meta
@@ -31,7 +31,7 @@ data_meta = retain_topk(block.test.dset.meta.lnk_meta.data_meta, k=3)
 block.test.dset.meta.lnk_meta.data_meta = data_meta
 block.test.dset.meta.lnk_meta.curr_data_meta = data_meta
 
-# %% ../nbs/92-radga-dr-ep-for-wikiseealso-lora.ipynb 13
+# %% ../nbs/92-radga-dr-ep-for-wikiseealso-lora.ipynb 14
 args = XCLearningArguments(
     output_dir='/home/scai/phd/aiz218323/scratch/outputs/92-radga-dr-ep-for-wikiseealso-lora-1-0',
     logging_first_step=True,
@@ -104,11 +104,11 @@ args = XCLearningArguments(
     num_metadata_augment_epochs=5,
 )
 
-# %% ../nbs/92-radga-dr-ep-for-wikiseealso-lora.ipynb 14
+# %% ../nbs/92-radga-dr-ep-for-wikiseealso-lora.ipynb 15
 metric = PrecRecl(block.n_lbl, block.test.data_lbl_filterer, prop=block.train.dset.data.data_lbl,
                   pk=10, rk=200, rep_pk=[1, 3, 5, 10], rep_rk=[10, 100, 200])
 
-# %% ../nbs/92-radga-dr-ep-for-wikiseealso-lora.ipynb 16
+# %% ../nbs/92-radga-dr-ep-for-wikiseealso-lora.ipynb 17
 bsz = max(args.per_device_train_batch_size, args.per_device_eval_batch_size)*torch.cuda.device_count()
 
 base_model = DistilBertModel.from_pretrained('sentence-transformers/msmarco-distilbert-base-v4')
@@ -130,7 +130,7 @@ model = RAD001(DistilBertConfig(), resize_length=5000, base_model=base_model, lo
 model.init_retrieval_head()
 model.init_cross_head()
 
-# %% ../nbs/92-radga-dr-ep-for-wikiseealso-lora.ipynb 19
+# %% ../nbs/92-radga-dr-ep-for-wikiseealso-lora.ipynb 20
 learn = XCLearner(
     model=model, 
     args=args,
@@ -140,7 +140,7 @@ learn = XCLearner(
     compute_metrics=metric,
 )
 
-# %% ../nbs/92-radga-dr-ep-for-wikiseealso-lora.ipynb 25
+# %% ../nbs/92-radga-dr-ep-for-wikiseealso-lora.ipynb 26
 if __name__ == '__main__':
     mp.freeze_support()
     learn.train()
