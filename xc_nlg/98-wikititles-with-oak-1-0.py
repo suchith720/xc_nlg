@@ -20,10 +20,15 @@ os.environ['WANDB_PROJECT']='xc-nlg_97-oak-dr-ep-for-wikititles'
 pkl_dir = '/home/scai/phd/aiz218323/scratch/datasets/'
 pkl_file = f'{pkl_dir}/processed/wikititles_data-metas_distilbert-base-uncased_rm_oak-linker.pkl'
 
-# %% ../nbs/98-wikititles-with-oak.ipynb 12
+# %% ../nbs/98-wikititles-with-oak.ipynb 11
 with open(pkl_file, 'rb') as file: block = pickle.load(file)
 
-# %% ../nbs/98-wikititles-with-oak.ipynb 13
+# %% ../nbs/98-wikititles-with-oak.ipynb 12
+block.collator.tfms.tfms[0].sampling_features = [('lbl2data',1),('lnk2data',3)]
+block.train.dset.meta.lnk_meta.meta_info_keys = []
+block.test.dset.meta.lnk_meta.meta_info_keys = []
+
+# %% ../nbs/98-wikititles-with-oak.ipynb 14
 data_meta = retain_topk(block.train.dset.meta.lnk_meta.data_meta, k=5)
 block.train.dset.meta.lnk_meta.curr_data_meta = data_meta
 block.train.dset.meta.lnk_meta.data_meta = data_meta
@@ -32,7 +37,7 @@ data_meta = retain_topk(block.test.dset.meta.lnk_meta.data_meta, k=3)
 block.test.dset.meta.lnk_meta.curr_data_meta = data_meta
 block.test.dset.meta.lnk_meta.data_meta = data_meta
 
-# %% ../nbs/98-wikititles-with-oak.ipynb 15
+# %% ../nbs/98-wikititles-with-oak.ipynb 16
 args = XCLearningArguments(
     output_dir='/home/scai/phd/aiz218323/scratch/outputs/98-wikititles-with-oak-1-0',
     logging_first_step=True,
@@ -106,7 +111,7 @@ args = XCLearningArguments(
 )
 
 
-# %% ../nbs/98-wikititles-with-oak.ipynb 16
+# %% ../nbs/98-wikititles-with-oak.ipynb 17
 bsz = max(args.per_device_train_batch_size, args.per_device_eval_batch_size)*torch.cuda.device_count()
 
 model = OAK003.from_pretrained('sentence-transformers/msmarco-distilbert-base-v4', batch_size=bsz, num_batch_labels=5000,
@@ -139,11 +144,11 @@ meta_embed_file = '/home/aiscuser/scratch/OGB_Weights/LF-WikiSeeAlsoTitles-320K/
 model.encoder.set_pretrained_meta_embeddings(torch.zeros(block.train.dset.meta['lnk_meta'].n_meta, model.config.dim))
 model.encoder.freeze_pretrained_meta_embeddings()
 
-# %% ../nbs/98-wikititles-with-oak.ipynb 18
+# %% ../nbs/98-wikititles-with-oak.ipynb 19
 metric = PrecRecl(block.n_lbl, block.test.data_lbl_filterer, prop=block.train.dset.data.data_lbl,
                   pk=10, rk=200, rep_pk=[1, 3, 5, 10], rep_rk=[10, 100, 200])
 
-# %% ../nbs/98-wikititles-with-oak.ipynb 19
+# %% ../nbs/98-wikititles-with-oak.ipynb 20
 learn = XCLearner(
     model=model, 
     args=args,
@@ -153,7 +158,7 @@ learn = XCLearner(
     compute_metrics=metric,
 )
 
-# %% ../nbs/98-wikititles-with-oak.ipynb 23
+# %% ../nbs/98-wikititles-with-oak.ipynb 24
 if __name__ == '__main__':
     mp.freeze_support()
     learn.train()
