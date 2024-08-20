@@ -18,7 +18,7 @@ os.environ['WANDB_PROJECT']='xc-nlg_97-oak-dr-ep-for-wikititles'
 
 # %% ../nbs/98-wikititles-with-oak.ipynb 8
 pkl_dir = '/home/scai/phd/aiz218323/scratch/datasets/'
-pkl_file = f'{pkl_dir}/processed/wikititles_data-metas_distilbert-base-uncased_rm_oak-linker.pkl'
+pkl_file = f'{pkl_dir}/processed/wikititles_data-lnk_distilbert-base-uncased_xcs.pkl'
 
 # %% ../nbs/98-wikititles-with-oak.ipynb 11
 with open(pkl_file, 'rb') as file: block = pickle.load(file)
@@ -158,7 +158,7 @@ learn = XCLearner(
     compute_metrics=metric,
 )
 
-# %% ../nbs/98-wikititles-with-oak.ipynb 24
+# %% ../nbs/98-wikititles-with-oak.ipynb 23
 if __name__ == '__main__':
     mp.freeze_support()
     learn.train()
