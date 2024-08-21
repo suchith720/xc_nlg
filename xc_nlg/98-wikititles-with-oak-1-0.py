@@ -166,7 +166,7 @@ meta_embed_file = '/home/aiscuser/scratch/OGB_Weights/LF-WikiSeeAlsoTitles-320K/
 # meta_embeddings = np.load(meta_embed_file)
 # model.encoder.set_pretrained_meta_embeddings(torch.tensor(meta_embeddings, dtype=torch.float32))
 
-model.encoder.set_pretrained_meta_embeddings(torch.zeros(block.train.dset.meta['clnk_meta'].n_meta, model.config.dim))
+model.encoder.set_pretrained_meta_embeddings(torch.zeros(block.train.dset.meta['cwalnk_meta'].n_meta, model.config.dim))
 model.encoder.freeze_pretrained_meta_embeddings()
 
 # %% ../nbs/98-wikititles-with-oak.ipynb 23
