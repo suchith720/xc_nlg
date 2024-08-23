@@ -14,18 +14,18 @@ from xcai.models.distillation import DTL004,TCH001,TCH002
 
 from xclib.utils.sparse import retain_topk
 
-# %% ../nbs/86-distillation-for-wikiseealso-with-oak.ipynb 7
+# %% ../nbs/86-distillation-for-wikiseealso-with-oak.ipynb 5
 os.environ['CUDA_VISIBLE_DEVICES'] = '0,1'
 os.environ['WANDB_PROJECT']='xc-nlg_83-oak-dr-ep-for-wikiseealso'
 
-# %% ../nbs/86-distillation-for-wikiseealso-with-oak.ipynb 9
+# %% ../nbs/86-distillation-for-wikiseealso-with-oak.ipynb 7
 pkl_dir = '/home/scai/phd/aiz218323/scratch/datasets/'
 pkl_file = f'{pkl_dir}/processed/wikiseealso_data-metas_distilbert-base-uncased_rm_radga-cat-linker.pkl'
 
-# %% ../nbs/86-distillation-for-wikiseealso-with-oak.ipynb 10
+# %% ../nbs/86-distillation-for-wikiseealso-with-oak.ipynb 8
 with open(pkl_file, 'rb') as file: block = pickle.load(file)
 
-# %% ../nbs/86-distillation-for-wikiseealso-with-oak.ipynb 12
+# %% ../nbs/86-distillation-for-wikiseealso-with-oak.ipynb 10
 args = XCLearningArguments(
     output_dir='/home/scai/phd/aiz218323/scratch/outputs/86-distillation-for-wikiseealso-with-oak-1-0',
     logging_first_step=True,
@@ -97,24 +97,27 @@ args = XCLearningArguments(
     augment_metadata=False,
     num_metadata_augment_warmup_epochs=10,
     num_metadata_augment_epochs=5,
+
+    use_cpu_for_searching=True,
+    use_cpu_for_clustering=False,
 )
 
 
-# %% ../nbs/86-distillation-for-wikiseealso-with-oak.ipynb 13
+# %% ../nbs/86-distillation-for-wikiseealso-with-oak.ipynb 11
 model_output = '/home/scai/phd/aiz218323/scratch/outputs/67-ngame-ep-for-wikiseealso-with-input-concatenation-1-4'
 m_teacher = TCH001.from_pretrained(f'{model_output}/teacher', n_data=block.train.dset.n_data, n_lbl=block.n_lbl)
 
 m_teacher.freeze_embeddings()
 m_teacher.freeze_data_embeddings()
 
-# %% ../nbs/86-distillation-for-wikiseealso-with-oak.ipynb 14
+# %% ../nbs/86-distillation-for-wikiseealso-with-oak.ipynb 12
 model_output = '/home/scai/phd/aiz218323/scratch/outputs/67-ngame-ep-for-wikiseealso-with-input-concatenation-1-4'
 m_teacher = TCH002.from_pretrained(f'{model_output}/teacher', n_data=block.train.dset.n_data, n_lbl=block.n_lbl)
 
 m_teacher.freeze_representations()
 m_teacher.init_lbl_embeddings()
 
-# %% ../nbs/86-distillation-for-wikiseealso-with-oak.ipynb 15
+# %% ../nbs/86-distillation-for-wikiseealso-with-oak.ipynb 13
 bsz = max(args.per_device_train_batch_size, args.per_device_eval_batch_size)*torch.cuda.device_count()
 
 m_student = OAK003.from_pretrained('sentence-transformers/msmarco-distilbert-base-v4', batch_size=bsz, num_batch_labels=5000,
@@ -146,17 +149,17 @@ meta_embed_file = '/home/aiscuser/scratch/OGB_Weights/LF-WikiSeeAlsoTitles-320K/
 m_student.encoder.set_pretrained_meta_embeddings(torch.zeros(block.train.dset.meta['lnk_meta'].n_meta, m_student.config.dim))
 m_student.encoder.freeze_pretrained_meta_embeddings()
 
-# %% ../nbs/86-distillation-for-wikiseealso-with-oak.ipynb 17
+# %% ../nbs/86-distillation-for-wikiseealso-with-oak.ipynb 15
 model = DTL004(DistilBertConfig(), m_student=m_student, m_teacher=m_teacher, bsz=bsz, tn_targ=5000, margin=0.3, tau=0.1, 
                n_negatives=10, apply_softmax=True, teacher_data_student_label_loss_weight=1.0, 
                student_data_teacher_label_loss_weight=1.0, data_mse_loss_weight=0.1, label_mse_loss_weight=0.1)
 
 
-# %% ../nbs/86-distillation-for-wikiseealso-with-oak.ipynb 18
+# %% ../nbs/86-distillation-for-wikiseealso-with-oak.ipynb 16
 metric = PrecRecl(block.n_lbl, block.test.data_lbl_filterer, prop=block.train.dset.data.data_lbl,
                   pk=10, rk=200, rep_pk=[1, 3, 5, 10], rep_rk=[10, 100, 200])
 
-# %% ../nbs/86-distillation-for-wikiseealso-with-oak.ipynb 19
+# %% ../nbs/86-distillation-for-wikiseealso-with-oak.ipynb 17
 learn = XCLearner(
     model=model, 
     args=args,
@@ -166,7 +169,7 @@ learn = XCLearner(
     compute_metrics=metric,
 )
 
-# %% ../nbs/86-distillation-for-wikiseealso-with-oak.ipynb 21
+# %% ../nbs/86-distillation-for-wikiseealso-with-oak.ipynb 19
 if __name__ == '__main__':
     mp.freeze_support()
     learn.train()
